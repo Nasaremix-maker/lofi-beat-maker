@@ -1,4 +1,4 @@
-const CACHE = "lofi-studio-v4";
+const CACHE = "lofi-studio-v6";
 const ASSETS = [
   "./",
   "./index.html",

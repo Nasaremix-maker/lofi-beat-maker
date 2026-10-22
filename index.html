@@ -25,13 +25,14 @@
         <div class="logo-mark">♪</div>
         <div>
           <h1>Lofi Beat Maker</h1>
-          <p class="tag">Web Studio</p>
+          <p class="tag">Web Studio Pro</p>
         </div>
       </div>
       <div class="header-actions">
-        <button id="themeBtn" class="ghost-btn" title="Toggle accent theme">◐</button>
-        <button id="shareBtn" class="ghost-btn" title="Copy share link">Share</button>
-        <button id="randomBtn" class="ghost-btn" title="New variation">🎲 New</button>
+        <button id="themeBtn" class="ghost-btn" title="Theme">◐</button>
+        <button id="shareBtn" class="ghost-btn" title="Share link">Share</button>
+        <button id="helpBtn" class="ghost-btn" title="Help">?</button>
+        <button id="randomBtn" class="ghost-btn" title="Randomize">🎲</button>
       </div>
     </header>
 
@@ -39,6 +40,7 @@
       <div class="viz-tabs">
         <button class="viz-tab active" data-mode="spectrum">Spectrum</button>
         <button class="viz-tab" data-mode="scope">Scope</button>
+        <button class="viz-tab" data-mode="bars">Bars</button>
       </div>
       <canvas id="viz"></canvas>
       <div class="meters">
@@ -47,18 +49,22 @@
       </div>
       <div class="viz-meta">
         <span id="status">Ready</span>
+        <span id="chordInfo">—</span>
         <span id="barInfo">—</span>
         <span id="sectionInfo">—</span>
       </div>
     </div>
 
     <section class="transport sticky-transport" id="transport">
-      <button id="playBtn" class="play-btn">
-        <span class="icon">▶</span>
-        <span class="label">Play</span>
-      </button>
+      <div class="transport-row">
+        <button id="playBtn" class="play-btn">
+          <span class="icon">▶</span>
+          <span class="label">Play</span>
+        </button>
+        <button id="tapBtn" class="ghost-btn tap-btn" title="Tap tempo">Tap</button>
+      </div>
       <div class="export-row">
-        <select id="exportLen" class="select-sm" title="Export length">
+        <select id="exportLen" class="select-sm">
           <option value="15">15s</option>
           <option value="30" selected>30s</option>
           <option value="60">1 min</option>
@@ -66,6 +72,7 @@
           <option value="300">5 min</option>
           <option value="600">10 min</option>
         </select>
+        <label class="toggle tiny"><input type="checkbox" id="exportFade" checked /> Fade</label>
         <button id="downloadBtn" class="btn-secondary">Download WAV</button>
       </div>
       <div class="export-progress hidden" id="exportProgress">
@@ -74,18 +81,20 @@
       </div>
     </section>
 
+    <!-- Moods / Presets -->
     <section class="card">
-      <div class="card-title">Presets</div>
-      <div class="preset-row" id="presetGrid">
-        <button class="chip active" data-p="chill">Chill Study</button>
-        <button class="chip" data-p="rainy">Rainy Jazz</button>
-        <button class="chip" data-p="dusty">Dusty Boom Bap</button>
-        <button class="chip" data-p="night">Late Night</button>
-        <button class="chip" data-p="dreamy">Dreamy</button>
-        <button class="chip" data-p="neo">Neo Soul</button>
-        <button class="chip" data-p="piano">Sleepy Piano</button>
-        <button class="chip" data-p="clean">Clean</button>
+      <div class="card-title">Moods</div>
+      <div class="preset-row" id="moodGrid">
+        <button class="chip mood" data-mood="Any">Any</button>
+        <button class="chip mood" data-mood="Calm">Calm</button>
+        <button class="chip mood" data-mood="Rainy">Rainy</button>
+        <button class="chip mood" data-mood="Jazzy">Jazzy</button>
+        <button class="chip mood" data-mood="Upbeat">Upbeat</button>
+        <button class="chip mood" data-mood="Dark">Dark</button>
+        <button class="chip mood" data-mood="Dreamy">Dreamy</button>
       </div>
+      <div class="card-title" style="margin-top:14px">Presets</div>
+      <div class="preset-row" id="presetGrid"></div>
     </section>
 
     <section class="card">
@@ -93,7 +102,7 @@
       <div class="grid-2">
         <div class="field">
           <div class="field-top"><label>BPM</label><span id="bpmVal" class="mono">76</span></div>
-          <input type="range" id="bpm" min="58" max="98" value="76" />
+          <input type="range" id="bpm" min="55" max="110" value="76" />
         </div>
         <div class="field">
           <div class="field-top"><label>Key</label></div>
@@ -104,8 +113,24 @@
           </select>
         </div>
         <div class="field">
+          <div class="field-top"><label>Scale</label></div>
+          <select id="scale" class="select">
+            <option value="minorPent">Minor Pent</option>
+            <option value="majorPent">Major Pent</option>
+            <option value="dorian">Dorian</option>
+            <option value="naturalMin">Natural Minor</option>
+            <option value="major">Major</option>
+            <option value="blues">Blues</option>
+            <option value="mixo">Mixolydian</option>
+          </select>
+        </div>
+        <div class="field">
           <div class="field-top"><label>Swing</label><span id="swingVal" class="mono">0.22</span></div>
-          <input type="range" id="swing" min="0" max="0.40" step="0.01" value="0.22" />
+          <input type="range" id="swing" min="0" max="0.42" step="0.01" value="0.22" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Humanize</label><span id="humanVal" class="mono">0.35</span></div>
+          <input type="range" id="humanize" min="0" max="1" step="0.01" value="0.35" />
         </div>
         <div class="field">
           <div class="field-top"><label>Melody</label><span id="melodyVal" class="mono">0.40</span></div>
@@ -115,62 +140,159 @@
     </section>
 
     <section class="card">
-      <div class="card-title">Tone</div>
+      <div class="card-title">Harmony & Bass</div>
       <div class="grid-2">
         <div class="field">
-          <div class="field-top"><label>Warmth</label><span id="filterVal" class="mono">5600</span></div>
-          <input type="range" id="filter" min="2000" max="10000" step="100" value="5600" />
+          <label>Progression</label>
+          <select id="prog" class="select"></select>
         </div>
         <div class="field">
-          <div class="field-top"><label>Reverb</label><span id="reverbVal" class="mono">0.36</span></div>
-          <input type="range" id="reverb" min="0" max="0.80" step="0.01" value="0.36" />
-        </div>
-        <div class="field">
-          <div class="field-top"><label>Pump</label><span id="pumpVal" class="mono">0.35</span></div>
-          <input type="range" id="pump" min="0" max="0.85" step="0.01" value="0.35" />
-        </div>
-        <div class="field">
-          <div class="field-top"><label>Drums</label><span id="drumsVal" class="mono">0.78</span></div>
-          <input type="range" id="drumsVol" min="0" max="1" step="0.01" value="0.78" />
-        </div>
-      </div>
-      <div class="toggles">
-        <label class="toggle"><input type="checkbox" id="vinylOn" checked /> Vinyl</label>
-        <label class="toggle"><input type="checkbox" id="rainOn" /> Rain</label>
-        <label class="toggle"><input type="checkbox" id="structureOn" checked /> Intro/Break</label>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-title">Instruments</div>
-      <div class="grid-2">
-        <div class="field">
-          <label>Chords</label>
+          <label>Chord sound</label>
           <select id="chordInst" class="select">
             <option value="Rhodes">Rhodes</option>
             <option value="Piano">Piano</option>
             <option value="Pad">Pad</option>
             <option value="Pluck">Pluck</option>
+            <option value="Bell">Bell</option>
+            <option value="EP">Electric Piano</option>
           </select>
         </div>
         <div class="field">
-          <label>Drums</label>
+          <label>Chord rhythm</label>
+          <select id="chordRhythm" class="select">
+            <option value="whole">Whole bar</option>
+            <option value="half">Half notes</option>
+            <option value="stabs">Gentle stabs</option>
+            <option value="offbeat">Offbeat</option>
+            <option value="arp">Arpeggio</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Bass style</label>
+          <select id="bassStyle" class="select">
+            <option value="root">Root sustain</option>
+            <option value="fifth">Root + fifth</option>
+            <option value="bounce">Bounce</option>
+            <option value="sparse">Sparse</option>
+            <option value="walk">Walking</option>
+            <option value="off">No bass</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Drums</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Pattern</label>
           <select id="drums" class="select">
             <option value="Mellow">Mellow Lofi</option>
             <option value="BoomBap">Boom Bap</option>
             <option value="HeadNod">Head Nod</option>
             <option value="Sparse">Sparse</option>
             <option value="Jazzy">Jazzy Shuffle</option>
+            <option value="Dilla">Dilla Swing</option>
+            <option value="TripHop">Trip Hop</option>
+            <option value="FourFloor">Four Floor Lite</option>
             <option value="None">No Drums</option>
           </select>
         </div>
+        <div class="field">
+          <div class="field-top"><label>Drum vol</label><span id="drumsVal" class="mono">0.78</span></div>
+          <input type="range" id="drumsVol" min="0" max="1" step="0.01" value="0.78" />
+        </div>
+      </div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="muteDrums" /> Mute drums</label>
+        <label class="toggle"><input type="checkbox" id="muteChords" /> Mute chords</label>
+        <label class="toggle"><input type="checkbox" id="muteBass" /> Mute bass</label>
+        <label class="toggle"><input type="checkbox" id="muteMel" /> Mute melody</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Tone & FX</div>
+      <div class="grid-2">
+        <div class="field">
+          <div class="field-top"><label>Warmth</label><span id="filterVal" class="mono">5600</span></div>
+          <input type="range" id="filter" min="1800" max="12000" step="100" value="5600" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Reverb</label><span id="reverbVal" class="mono">0.36</span></div>
+          <input type="range" id="reverb" min="0" max="0.85" step="0.01" value="0.36" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Pump</label><span id="pumpVal" class="mono">0.35</span></div>
+          <input type="range" id="pump" min="0" max="0.85" step="0.01" value="0.35" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Echo</label><span id="echoVal" class="mono">0.20</span></div>
+          <input type="range" id="echo" min="0" max="0.7" step="0.01" value="0.20" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Width</label><span id="widthVal" class="mono">0.45</span></div>
+          <input type="range" id="width" min="0" max="1" step="0.01" value="0.45" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Master</label><span id="masterVal" class="mono">0.85</span></div>
+          <input type="range" id="masterVol" min="0.2" max="1" step="0.01" value="0.85" />
+        </div>
+      </div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="vinylOn" checked /> Vinyl</label>
+        <label class="toggle"><input type="checkbox" id="rainOn" /> Rain</label>
+        <label class="toggle"><input type="checkbox" id="structureOn" checked /> Intro/Break</label>
+        <label class="toggle"><input type="checkbox" id="loopLive" /> Live loop feel</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Studio tools</div>
+      <div class="tools-row">
+        <button id="favBtn" class="btn-secondary">★ Favorite</button>
+        <button id="loadFavBtn" class="btn-secondary">Load ★</button>
+        <button id="copyJsonBtn" class="btn-secondary">Copy JSON</button>
+        <button id="resetBtn" class="btn-secondary">Reset</button>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <div class="field-top"><label>Sleep timer</label><span id="sleepVal" class="mono">Off</span></div>
+        <select id="sleep" class="select">
+          <option value="0">Off</option>
+          <option value="5">5 min</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="60">60 min</option>
+        </select>
+      </div>
+      <div class="seed-row">
+        <label>Seed</label>
+        <input type="text" id="seed" class="select seed-input" value="1" />
+        <button id="newSeedBtn" class="ghost-btn">New</button>
       </div>
     </section>
 
     <p class="foot">
-      Space = play/stop · Settings auto-save · Share copies a link<br />
-      Runs fully in your browser · Add to Home Screen on phone
+      Space = play · T = tap tempo · R = random · S = share<br />
+      Settings auto-save · Works offline after first visit
     </p>
+  </div>
+
+  <div id="helpModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>Quick help</h2>
+      <ul>
+        <li><b>Space</b> — play / stop</li>
+        <li><b>T</b> — tap tempo</li>
+        <li><b>R</b> — randomize</li>
+        <li><b>S</b> — copy share link</li>
+        <li>Moods bias the randomizer</li>
+        <li>Share link restores full settings</li>
+        <li>Favorites saved on this device</li>
+        <li>iPhone: turn off Silent switch for sound</li>
+      </ul>
+      <button id="closeHelp" class="play-btn" style="margin-top:12px">Got it</button>
+    </div>
   </div>
 
   <script src="app.js"></script>
