@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#08080c" />
+  <meta name="theme-color" content="#06060a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="description" content="Procedural lofi beat maker – generate chill beats in your browser" />
   <title>Lofi Beat Maker</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -26,32 +28,49 @@
           <p class="tag">Web Studio</p>
         </div>
       </div>
-      <button id="randomBtn" class="ghost-btn" title="New variation">
-        <span>🎲</span> New
-      </button>
+      <div class="header-actions">
+        <button id="themeBtn" class="ghost-btn" title="Toggle accent theme">◐</button>
+        <button id="shareBtn" class="ghost-btn" title="Copy share link">Share</button>
+        <button id="randomBtn" class="ghost-btn" title="New variation">🎲 New</button>
+      </div>
     </header>
 
     <div class="viz-card">
+      <div class="viz-tabs">
+        <button class="viz-tab active" data-mode="spectrum">Spectrum</button>
+        <button class="viz-tab" data-mode="scope">Scope</button>
+      </div>
       <canvas id="viz"></canvas>
+      <div class="meters">
+        <div class="meter"><span>L</span><div class="meter-track"><div class="meter-fill" id="meterL"></div></div></div>
+        <div class="meter"><span>R</span><div class="meter-track"><div class="meter-fill" id="meterR"></div></div></div>
+      </div>
       <div class="viz-meta">
         <span id="status">Ready</span>
         <span id="barInfo">—</span>
+        <span id="sectionInfo">—</span>
       </div>
     </div>
 
-    <section class="transport">
+    <section class="transport sticky-transport" id="transport">
       <button id="playBtn" class="play-btn">
         <span class="icon">▶</span>
         <span class="label">Play</span>
       </button>
       <div class="export-row">
-        <select id="exportLen" class="select-sm">
+        <select id="exportLen" class="select-sm" title="Export length">
           <option value="15">15s</option>
           <option value="30" selected>30s</option>
           <option value="60">1 min</option>
           <option value="120">2 min</option>
+          <option value="300">5 min</option>
+          <option value="600">10 min</option>
         </select>
         <button id="downloadBtn" class="btn-secondary">Download WAV</button>
+      </div>
+      <div class="export-progress hidden" id="exportProgress">
+        <div class="export-bar"><div class="export-bar-fill" id="exportBarFill"></div></div>
+        <span id="exportPct">0%</span>
       </div>
     </section>
 
@@ -107,13 +126,18 @@
           <input type="range" id="reverb" min="0" max="0.80" step="0.01" value="0.36" />
         </div>
         <div class="field">
-          <div class="field-top"><label>Vinyl</label><span id="vinylVal" class="mono">0.15</span></div>
-          <input type="range" id="vinyl" min="0" max="0.70" step="0.01" value="0.15" />
+          <div class="field-top"><label>Pump</label><span id="pumpVal" class="mono">0.35</span></div>
+          <input type="range" id="pump" min="0" max="0.85" step="0.01" value="0.35" />
         </div>
         <div class="field">
           <div class="field-top"><label>Drums</label><span id="drumsVal" class="mono">0.78</span></div>
           <input type="range" id="drumsVol" min="0" max="1" step="0.01" value="0.78" />
         </div>
+      </div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="vinylOn" checked /> Vinyl</label>
+        <label class="toggle"><input type="checkbox" id="rainOn" /> Rain</label>
+        <label class="toggle"><input type="checkbox" id="structureOn" checked /> Intro/Break</label>
       </div>
     </section>
 
@@ -143,7 +167,10 @@
       </div>
     </section>
 
-    <p class="foot">Runs fully in your browser · Add to Home Screen on phone</p>
+    <p class="foot">
+      Space = play/stop · Settings auto-save · Share copies a link<br />
+      Runs fully in your browser · Add to Home Screen on phone
+    </p>
   </div>
 
   <script src="app.js"></script>
