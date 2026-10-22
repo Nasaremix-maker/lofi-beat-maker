@@ -1,11 +1,11 @@
 {
   "name": "Lofi Beat Maker",
   "short_name": "Lofi Beats",
-  "description": "Procedural lofi beat maker that works on phone and desktop",
+  "description": "Procedural lofi beat maker for phone and desktop",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f0f13",
-  "theme_color": "#0f0f13",
+  "background_color": "#08080c",
+  "theme_color": "#08080c",
   "orientation": "portrait-primary",
   "icons": [
     {
