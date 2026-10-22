@@ -2,108 +2,154 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f0f13" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#08080c" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Procedural lofi beat maker – generate chill beats in your browser" />
   <title>Lofi Beat Maker</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="bg-glow"></div>
   <div class="app">
-    <header>
-      <h1>Lofi Beat Maker</h1>
-      <p class="subtitle">Web Edition · Works on phone & desktop</p>
+
+    <header class="header">
+      <div class="brand">
+        <div class="logo-mark">♪</div>
+        <div>
+          <h1>Lofi Beat Maker</h1>
+          <p class="tag">Web Studio</p>
+        </div>
+      </div>
+      <button id="randomBtn" class="ghost-btn" title="New variation">
+        <span>🎲</span> New
+      </button>
     </header>
 
+    <div class="viz-card">
+      <canvas id="viz"></canvas>
+      <div class="viz-meta">
+        <span id="status">Ready</span>
+        <span id="barInfo">—</span>
+      </div>
+    </div>
+
     <section class="transport">
-      <button id="playBtn" class="play-btn">▶ Play</button>
-      <div class="status" id="status">Ready</div>
-      <button id="downloadBtn" class="secondary">Download WAV</button>
-    </section>
-
-    <section class="presets">
-      <label>Preset</label>
-      <select id="preset">
-        <option value="chill">Chill Study</option>
-        <option value="rainy">Rainy Jazz</option>
-        <option value="dusty">Dusty Boom Bap</option>
-        <option value="night">Late Night Drive</option>
-        <option value="dreamy">Dreamy Pads</option>
-        <option value="neo">Neo Soul</option>
-        <option value="piano">Sleepy Piano</option>
-        <option value="clean">Clean Studio</option>
-      </select>
-    </section>
-
-    <section class="controls">
-      <div class="control">
-        <label>BPM <span id="bpmVal">76</span></label>
-        <input type="range" id="bpm" min="55" max="110" value="76" />
-      </div>
-      <div class="control">
-        <label>Key</label>
-        <select id="key">
-          <option>C</option><option>C#</option><option>D</option><option>D#</option>
-          <option>E</option><option>F</option><option>F#</option><option>G</option>
-          <option>G#</option><option selected>A</option><option>A#</option><option>B</option>
+      <button id="playBtn" class="play-btn">
+        <span class="icon">▶</span>
+        <span class="label">Play</span>
+      </button>
+      <div class="export-row">
+        <select id="exportLen" class="select-sm">
+          <option value="15">15s</option>
+          <option value="30" selected>30s</option>
+          <option value="60">1 min</option>
+          <option value="120">2 min</option>
         </select>
-      </div>
-      <div class="control">
-        <label>Swing <span id="swingVal">0.20</span></label>
-        <input type="range" id="swing" min="0" max="0.4" step="0.01" value="0.20" />
-      </div>
-      <div class="control">
-        <label>Reverb <span id="reverbVal">0.35</span></label>
-        <input type="range" id="reverb" min="0" max="1" step="0.01" value="0.35" />
-      </div>
-      <div class="control">
-        <label>Vinyl <span id="vinylVal">0.00</span></label>
-        <input type="range" id="vinyl" min="0" max="1" step="0.01" value="0.00" />
-      </div>
-      <div class="control">
-        <label>Filter <span id="filterVal">5200</span></label>
-        <input type="range" id="filter" min="1200" max="12000" step="100" value="5200" />
+        <button id="downloadBtn" class="btn-secondary">Download WAV</button>
       </div>
     </section>
 
-    <section class="row">
-      <div class="control">
-        <label>Chord Sound</label>
-        <select id="chordInst">
-          <option>Rhodes</option>
-          <option>Piano</option>
-          <option>Pad</option>
-          <option>Pluck</option>
-        </select>
-      </div>
-      <div class="control">
-        <label>Drums</label>
-        <select id="drums">
-          <option>Mellow Lofi</option>
-          <option>Boom Bap</option>
-          <option>Head Nod</option>
-          <option>Sparse</option>
-          <option>Jazzy Shuffle</option>
-          <option>No Drums</option>
-        </select>
+    <section class="card">
+      <div class="card-title">Presets</div>
+      <div class="preset-row" id="presetGrid">
+        <button class="chip active" data-p="chill">Chill Study</button>
+        <button class="chip" data-p="rainy">Rainy Jazz</button>
+        <button class="chip" data-p="dusty">Dusty Boom Bap</button>
+        <button class="chip" data-p="night">Late Night</button>
+        <button class="chip" data-p="dreamy">Dreamy</button>
+        <button class="chip" data-p="neo">Neo Soul</button>
+        <button class="chip" data-p="piano">Sleepy Piano</button>
+        <button class="chip" data-p="clean">Clean</button>
       </div>
     </section>
 
-    <section class="info">
-      <p>This is a web version of your Lofi Beat Maker. It runs fully in the browser (no install needed). On iPhone/Android you can add it to your Home Screen for an app-like experience.</p>
+    <section class="card">
+      <div class="card-title">Groove</div>
+      <div class="grid-2">
+        <div class="field">
+          <div class="field-top"><label>BPM</label><span id="bpmVal" class="mono">76</span></div>
+          <input type="range" id="bpm" min="58" max="98" value="76" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Key</label></div>
+          <select id="key" class="select">
+            <option>C</option><option>C#</option><option>D</option><option>D#</option>
+            <option>E</option><option>F</option><option>F#</option><option>G</option>
+            <option>G#</option><option selected>A</option><option>A#</option><option>B</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Swing</label><span id="swingVal" class="mono">0.22</span></div>
+          <input type="range" id="swing" min="0" max="0.40" step="0.01" value="0.22" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Melody</label><span id="melodyVal" class="mono">0.40</span></div>
+          <input type="range" id="melody" min="0" max="1" step="0.01" value="0.40" />
+        </div>
+      </div>
     </section>
 
-    <footer>
-      <small>Made for mobile & desktop · GitHub Pages ready</small>
-    </footer>
+    <section class="card">
+      <div class="card-title">Tone</div>
+      <div class="grid-2">
+        <div class="field">
+          <div class="field-top"><label>Warmth</label><span id="filterVal" class="mono">5600</span></div>
+          <input type="range" id="filter" min="2000" max="10000" step="100" value="5600" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Reverb</label><span id="reverbVal" class="mono">0.36</span></div>
+          <input type="range" id="reverb" min="0" max="0.80" step="0.01" value="0.36" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Vinyl</label><span id="vinylVal" class="mono">0.15</span></div>
+          <input type="range" id="vinyl" min="0" max="0.70" step="0.01" value="0.15" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label>Drums</label><span id="drumsVal" class="mono">0.78</span></div>
+          <input type="range" id="drumsVol" min="0" max="1" step="0.01" value="0.78" />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Instruments</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Chords</label>
+          <select id="chordInst" class="select">
+            <option value="Rhodes">Rhodes</option>
+            <option value="Piano">Piano</option>
+            <option value="Pad">Pad</option>
+            <option value="Pluck">Pluck</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Drums</label>
+          <select id="drums" class="select">
+            <option value="Mellow">Mellow Lofi</option>
+            <option value="BoomBap">Boom Bap</option>
+            <option value="HeadNod">Head Nod</option>
+            <option value="Sparse">Sparse</option>
+            <option value="Jazzy">Jazzy Shuffle</option>
+            <option value="None">No Drums</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <p class="foot">Runs fully in your browser · Add to Home Screen on phone</p>
   </div>
 
   <script src="app.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js").catch(console.warn);
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
     }
   </script>
 </body>
