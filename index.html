@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0f13" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Lofi Beat Maker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Lofi Beat Maker</h1>
+      <p class="subtitle">Web Edition · Works on phone & desktop</p>
+    </header>
+
+    <section class="transport">
+      <button id="playBtn" class="play-btn">▶ Play</button>
+      <div class="status" id="status">Ready</div>
+      <button id="downloadBtn" class="secondary">Download WAV</button>
+    </section>
+
+    <section class="presets">
+      <label>Preset</label>
+      <select id="preset">
+        <option value="chill">Chill Study</option>
+        <option value="rainy">Rainy Jazz</option>
+        <option value="dusty">Dusty Boom Bap</option>
+        <option value="night">Late Night Drive</option>
+        <option value="dreamy">Dreamy Pads</option>
+        <option value="neo">Neo Soul</option>
+        <option value="piano">Sleepy Piano</option>
+        <option value="clean">Clean Studio</option>
+      </select>
+    </section>
+
+    <section class="controls">
+      <div class="control">
+        <label>BPM <span id="bpmVal">76</span></label>
+        <input type="range" id="bpm" min="55" max="110" value="76" />
+      </div>
+      <div class="control">
+        <label>Key</label>
+        <select id="key">
+          <option>C</option><option>C#</option><option>D</option><option>D#</option>
+          <option>E</option><option>F</option><option>F#</option><option>G</option>
+          <option>G#</option><option selected>A</option><option>A#</option><option>B</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Swing <span id="swingVal">0.20</span></label>
+        <input type="range" id="swing" min="0" max="0.4" step="0.01" value="0.20" />
+      </div>
+      <div class="control">
+        <label>Reverb <span id="reverbVal">0.35</span></label>
+        <input type="range" id="reverb" min="0" max="1" step="0.01" value="0.35" />
+      </div>
+      <div class="control">
+        <label>Vinyl <span id="vinylVal">0.00</span></label>
+        <input type="range" id="vinyl" min="0" max="1" step="0.01" value="0.00" />
+      </div>
+      <div class="control">
+        <label>Filter <span id="filterVal">5200</span></label>
+        <input type="range" id="filter" min="1200" max="12000" step="100" value="5200" />
+      </div>
+    </section>
+
+    <section class="row">
+      <div class="control">
+        <label>Chord Sound</label>
+        <select id="chordInst">
+          <option>Rhodes</option>
+          <option>Piano</option>
+          <option>Pad</option>
+          <option>Pluck</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Drums</label>
+        <select id="drums">
+          <option>Mellow Lofi</option>
+          <option>Boom Bap</option>
+          <option>Head Nod</option>
+          <option>Sparse</option>
+          <option>Jazzy Shuffle</option>
+          <option>No Drums</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="info">
+      <p>This is a web version of your Lofi Beat Maker. It runs fully in the browser (no install needed). On iPhone/Android you can add it to your Home Screen for an app-like experience.</p>
+    </section>
+
+    <footer>
+      <small>Made for mobile & desktop · GitHub Pages ready</small>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(console.warn);
+    }
+  </script>
+</body>
+</html>
