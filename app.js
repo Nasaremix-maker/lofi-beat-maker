@@ -1,316 +1,547 @@
-// Lofi Beat Maker – Web Edition
-// Simplified procedural engine using Web Audio API
+/**
+ * Lofi Beat Maker – Web Studio
+ * Richer procedural engine using Web Audio API
+ */
 
-const AudioContext = window.AudioContext || window.webkitAudioContext;
+const AC = window.AudioContext || window.webkitAudioContext;
 let ctx = null;
+let master, filterNode, reverbSend, reverbReturn, analyser;
 let isPlaying = false;
-let nextNoteTime = 0;
+let nextTime = 0;
 let timerID = null;
-let currentBar = 0;
+let barCount = 0;
+let animID = null;
 
-// Simple note frequencies (A4 = 440)
-const NOTE_FREQ = {
+const NOTE = {
   C: 261.63, "C#": 277.18, D: 293.66, "D#": 311.13,
   E: 329.63, F: 349.23, "F#": 369.99, G: 392.00,
   "G#": 415.30, A: 440.00, "A#": 466.16, B: 493.88
 };
 
-const PRESETS = {
-  chill:  { bpm: 76, key: "A", swing: 0.20, reverb: 0.35, vinyl: 0.00, filter: 6200, chordInst: "Rhodes", drums: "Mellow Lofi" },
-  rainy:  { bpm: 82, key: "F", swing: 0.32, reverb: 0.40, vinyl: 0.25, filter: 6500, chordInst: "Piano", drums: "Jazzy Shuffle" },
-  dusty:  { bpm: 88, key: "D", swing: 0.30, reverb: 0.25, vinyl: 0.55, filter: 4200, chordInst: "Pluck", drums: "Boom Bap" },
-  night:  { bpm: 78, key: "C#", swing: 0.18, reverb: 0.50, vinyl: 0.15, filter: 4800, chordInst: "Pad", drums: "Head Nod" },
-  dreamy: { bpm: 64, key: "E", swing: 0.12, reverb: 0.60, vinyl: 0.00, filter: 4000, chordInst: "Pad", drums: "Sparse" },
-  neo:    { bpm: 84, key: "A#", swing: 0.30, reverb: 0.30, vinyl: 0.10, filter: 5800, chordInst: "Rhodes", drums: "Head Nod" },
-  piano:  { bpm: 66, key: "D#", swing: 0.15, reverb: 0.45, vinyl: 0.30, filter: 5000, chordInst: "Piano", drums: "Sparse" },
-  clean:  { bpm: 76, key: "A", swing: 0.18, reverb: 0.28, vinyl: 0.00, filter: 7800, chordInst: "Rhodes", drums: "Mellow Lofi" }
+const SCALES = {
+  minorPent: [0, 3, 5, 7, 10],
+  majorPent: [0, 2, 4, 7, 9],
+  dorian: [0, 2, 3, 5, 7, 9, 10],
+  naturalMin: [0, 2, 3, 5, 7, 8, 10]
 };
 
-// Simple chord progressions (intervals from root)
+// root offset + quality intervals (from root)
 const PROGS = {
-  chill:  [0, 5, 10, 3],
-  rainy:  [2, 7, 0, 9],
-  dusty:  [0, 8, 3, 10],
-  night:  [0, 8, 5, 7],
-  dreamy: [0, 3, 8, 10],
-  neo:    [0, 3, 10, 5],
-  piano:  [0, 8, 10, 7],
-  clean:  [0, 5, 10, 3]
+  chill:  [[0, [0,3,7,10]], [5, [0,3,7,10]], [10, [0,4,7,10]], [3, [0,4,7,11]]],
+  rainy:  [[2, [0,3,7,10]], [7, [0,4,7,10]], [0, [0,4,7,11]], [9, [0,3,7,10]]],
+  dusty:  [[0, [0,3,7,10]], [8, [0,4,7,11]], [3, [0,4,7,11]], [10, [0,4,7,10]]],
+  night:  [[0, [0,3,7,10,14]], [8, [0,4,7,11]], [5, [0,3,7,10]], [7, [0,4,7,10]]],
+  dreamy: [[0, [0,3,7,10,14]], [3, [0,4,7,11]], [8, [0,4,7,11]], [10, [0,4,7,10]]],
+  neo:    [[0, [0,3,7,10,14]], [3, [0,4,7,11]], [10, [0,4,7,10]], [5, [0,3,7,10,14]]],
+  piano:  [[0, [0,3,7,10]], [8, [0,4,7,11]], [10, [0,4,7,10]], [7, [0,3,7,10]]],
+  clean:  [[0, [0,4,7,11]], [9, [0,3,7,10]], [2, [0,3,7,10]], [7, [0,4,7,10]]]
 };
 
-function getParams() {
+const PRESETS = {
+  chill:  { bpm:76, key:"A", swing:0.22, melody:0.40, filter:5800, reverb:0.36, vinyl:0.12, drumsVol:0.78, chordInst:"Rhodes", drums:"Mellow", prog:"chill", scale:"minorPent" },
+  rainy:  { bpm:82, key:"F", swing:0.30, melody:0.35, filter:6400, reverb:0.42, vinyl:0.28, drumsVol:0.70, chordInst:"Piano", drums:"Jazzy", prog:"rainy", scale:"majorPent" },
+  dusty:  { bpm:88, key:"D", swing:0.28, melody:0.28, filter:4200, reverb:0.28, vinyl:0.55, drumsVol:0.88, chordInst:"Pluck", drums:"BoomBap", prog:"dusty", scale:"minorPent" },
+  night:  { bpm:78, key:"C#", swing:0.18, melody:0.45, filter:4800, reverb:0.50, vinyl:0.18, drumsVol:0.72, chordInst:"Pad", drums:"HeadNod", prog:"night", scale:"dorian" },
+  dreamy: { bpm:64, key:"E", swing:0.12, melody:0.30, filter:3800, reverb:0.62, vinyl:0.08, drumsVol:0.55, chordInst:"Pad", drums:"Sparse", prog:"dreamy", scale:"dorian" },
+  neo:    { bpm:84, key:"A#", swing:0.28, melody:0.42, filter:5600, reverb:0.34, vinyl:0.15, drumsVol:0.80, chordInst:"Rhodes", drums:"HeadNod", prog:"neo", scale:"dorian" },
+  piano:  { bpm:66, key:"D#", swing:0.14, melody:0.48, filter:5000, reverb:0.44, vinyl:0.35, drumsVol:0.50, chordInst:"Piano", drums:"Sparse", prog:"piano", scale:"naturalMin" },
+  clean:  { bpm:76, key:"A", swing:0.16, melody:0.38, filter:7800, reverb:0.28, vinyl:0.00, drumsVol:0.70, chordInst:"Rhodes", drums:"Mellow", prog:"clean", scale:"majorPent" }
+};
+
+const DRUM_PATS = {
+  Mellow:  { k:[0,8], s:[4,12], h:[0,2,4,6,8,10,12,14], o:[] },
+  BoomBap: { k:[0,7,10], s:[4,12], h:[0,2,4,6,8,10,12,14], o:[] },
+  HeadNod: { k:[0,6,10], s:[4,12], h:[0,2,3,4,6,8,10,12,14], o:[] },
+  Sparse:  { k:[0,8], s:[12], h:[4,12], o:[] },
+  Jazzy:   { k:[0,7], s:[4,12], h:[0,2,3,4,6,7,8,10,12,14], o:[14] },
+  None:    { k:[], s:[], h:[], o:[] }
+};
+
+function $(id) { return document.getElementById(id); }
+
+function getP() {
   return {
-    bpm: +document.getElementById("bpm").value,
-    key: document.getElementById("key").value,
-    swing: +document.getElementById("swing").value,
-    reverb: +document.getElementById("reverb").value,
-    vinyl: +document.getElementById("vinyl").value,
-    filter: +document.getElementById("filter").value,
-    chordInst: document.getElementById("chordInst").value,
-    drums: document.getElementById("drums").value
+    bpm: +$("bpm").value,
+    key: $("key").value,
+    swing: +$("swing").value,
+    melody: +$("melody").value,
+    filter: +$("filter").value,
+    reverb: +$("reverb").value,
+    vinyl: +$("vinyl").value,
+    drumsVol: +$("drumsVol").value,
+    chordInst: $("chordInst").value,
+    drums: $("drums").value,
+    prog: window._prog || "chill",
+    scale: window._scale || "minorPent"
   };
 }
 
 function updateLabels() {
-  document.getElementById("bpmVal").textContent = document.getElementById("bpm").value;
-  document.getElementById("swingVal").textContent = (+document.getElementById("swing").value).toFixed(2);
-  document.getElementById("reverbVal").textContent = (+document.getElementById("reverb").value).toFixed(2);
-  document.getElementById("vinylVal").textContent = (+document.getElementById("vinyl").value).toFixed(2);
-  document.getElementById("filterVal").textContent = document.getElementById("filter").value;
+  $("bpmVal").textContent = $("bpm").value;
+  $("swingVal").textContent = (+$("swing").value).toFixed(2);
+  $("melodyVal").textContent = (+$("melody").value).toFixed(2);
+  $("filterVal").textContent = $("filter").value;
+  $("reverbVal").textContent = (+$("reverb").value).toFixed(2);
+  $("vinylVal").textContent = (+$("vinyl").value).toFixed(2);
+  $("drumsVal").textContent = (+$("drumsVol").value).toFixed(2);
 }
 
-// ── Audio helpers ──
-function createNoiseBuffer(duration) {
-  const len = ctx.sampleRate * duration;
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-  return buf;
-}
+// ─── Audio graph ───────────────────────────────────────────
+function ensureCtx() {
+  if (ctx) return;
+  ctx = new AC();
+  master = ctx.createGain();
+  master.gain.value = 0.72;
 
-function playKick(time, gain = 0.7) {
-  const osc = ctx.createOscillator();
-  const g = ctx.createGain();
-  osc.frequency.setValueAtTime(150, time);
-  osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
-  g.gain.setValueAtTime(gain, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
-  osc.connect(g);
-  g.connect(masterGain);
-  osc.start(time);
-  osc.stop(time + 0.4);
-}
-
-function playSnare(time, gain = 0.45) {
-  const noise = ctx.createBufferSource();
-  noise.buffer = createNoiseBuffer(0.3);
-  const filter = ctx.createBiquadFilter();
-  filter.type = "bandpass";
-  filter.frequency.value = 1800;
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(gain, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
-  noise.connect(filter);
-  filter.connect(g);
-  g.connect(masterGain);
-  noise.start(time);
-  noise.stop(time + 0.25);
-}
-
-function playHat(time, gain = 0.25, open = false) {
-  const noise = ctx.createBufferSource();
-  noise.buffer = createNoiseBuffer(open ? 0.35 : 0.08);
-  const filter = ctx.createBiquadFilter();
-  filter.type = "highpass";
-  filter.frequency.value = 7000;
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(gain, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + (open ? 0.3 : 0.06));
-  noise.connect(filter);
-  filter.connect(g);
-  g.connect(masterGain);
-  noise.start(time);
-  noise.stop(time + (open ? 0.35 : 0.1));
-}
-
-function playChord(time, rootFreq, type = "Rhodes", gain = 0.18) {
-  // simple major/minor 7th style
-  const intervals = [0, 4, 7, 11]; // maj7-ish
-  intervals.forEach((semi, i) => {
-    const freq = rootFreq * Math.pow(2, semi / 12);
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = type === "Pad" ? "sawtooth" : type === "Pluck" ? "triangle" : "sine";
-    osc.frequency.value = freq;
-    // slight detune for richness
-    if (i > 0) osc.detune.value = (Math.random() - 0.5) * 8;
-
-    const attack = type === "Pad" ? 0.25 : 0.01;
-    const decay = type === "Pad" ? 1.8 : 0.9;
-    g.gain.setValueAtTime(0, time);
-    g.gain.linearRampToValueAtTime(gain / intervals.length, time + attack);
-    g.gain.exponentialRampToValueAtTime(0.001, time + decay);
-
-    // simple lowpass for warmth
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = type === "Pad" ? 1200 : 2800;
-
-    osc.connect(filter);
-    filter.connect(g);
-    g.connect(reverbInput || masterGain);
-    osc.start(time);
-    osc.stop(time + decay + 0.1);
-  });
-}
-
-function playBass(time, freq, gain = 0.35) {
-  const osc = ctx.createOscillator();
-  const g = ctx.createGain();
-  osc.type = "sine";
-  osc.frequency.value = freq / 2; // one octave down
-  g.gain.setValueAtTime(gain, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
-  osc.connect(g);
-  g.connect(masterGain);
-  osc.start(time);
-  osc.stop(time + 0.4);
-}
-
-// Master + effects
-let masterGain, reverbInput, reverbNode, filterNode, vinylGain;
-
-function setupEffects() {
-  masterGain = ctx.createGain();
-  masterGain.gain.value = 0.7;
-
-  // simple convolver-like reverb using delay network (lightweight)
-  reverbInput = ctx.createGain();
-  const delay1 = ctx.createDelay(1.0);
-  const delay2 = ctx.createDelay(1.0);
-  const feedback = ctx.createGain();
-  const wet = ctx.createGain();
-  delay1.delayTime.value = 0.29;
-  delay2.delayTime.value = 0.37;
-  feedback.gain.value = 0.35;
-  wet.gain.value = 0.4;
-
-  reverbInput.connect(delay1);
-  delay1.connect(delay2);
-  delay2.connect(feedback);
-  feedback.connect(delay1);
-  delay1.connect(wet);
-  delay2.connect(wet);
-  wet.connect(masterGain);
-  reverbInput.connect(masterGain); // dry
-
-  // master filter
   filterNode = ctx.createBiquadFilter();
   filterNode.type = "lowpass";
-  filterNode.frequency.value = 5200;
-  masterGain.connect(filterNode);
-  filterNode.connect(ctx.destination);
+  filterNode.frequency.value = 5600;
+  filterNode.Q.value = 0.7;
+
+  // lightweight reverb (parallel delays)
+  reverbSend = ctx.createGain();
+  reverbReturn = ctx.createGain();
+  reverbReturn.gain.value = 0.35;
+  const d1 = ctx.createDelay(1.0); d1.delayTime.value = 0.27;
+  const d2 = ctx.createDelay(1.0); d2.delayTime.value = 0.39;
+  const d3 = ctx.createDelay(1.0); d3.delayTime.value = 0.53;
+  const fb = ctx.createGain(); fb.gain.value = 0.38;
+  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 4500;
+
+  reverbSend.connect(d1);
+  d1.connect(d2); d2.connect(d3); d3.connect(fb); fb.connect(d1);
+  d1.connect(lp); d2.connect(lp); d3.connect(lp);
+  lp.connect(reverbReturn);
+  reverbReturn.connect(master);
+
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.75;
+
+  master.connect(filterNode);
+  filterNode.connect(analyser);
+  analyser.connect(ctx.destination);
 }
 
-function scheduleBar(params, barStartTime) {
-  const secondsPerBeat = 60 / params.bpm;
-  const secondsPer16th = secondsPerBeat / 4;
-  const swing = params.swing;
+function noiseBuf(dur) {
+  const n = Math.floor(ctx.sampleRate * dur);
+  const b = ctx.createBuffer(1, n, ctx.sampleRate);
+  const d = b.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+}
 
-  // drum patterns (very simplified)
-  const patterns = {
-    "Mellow Lofi": { kick: [0, 8], snare: [4, 12], hat: [0,2,4,6,8,10,12,14] },
-    "Boom Bap":    { kick: [0, 7, 10], snare: [4, 12], hat: [0,2,4,6,8,10,12,14] },
-    "Head Nod":    { kick: [0, 6, 10], snare: [4, 12], hat: [0,2,3,4,6,8,10,12,14] },
-    "Sparse":      { kick: [0, 8], snare: [12], hat: [4, 12] },
-    "Jazzy Shuffle":{ kick: [0, 7], snare: [4, 12], hat: [0,2,3,4,6,7,8,10,12,14] },
-    "No Drums":    { kick: [], snare: [], hat: [] }
-  };
-  const pat = patterns[params.drums] || patterns["Mellow Lofi"];
+// ─── Voices ────────────────────────────────────────────────
+function kick(t, g = 0.85) {
+  const o = ctx.createOscillator();
+  const gn = ctx.createGain();
+  o.frequency.setValueAtTime(160, t);
+  o.frequency.exponentialRampToValueAtTime(42, t + 0.08);
+  gn.gain.setValueAtTime(g, t);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+  o.connect(gn); gn.connect(master);
+  // click
+  const c = ctx.createOscillator();
+  const cg = ctx.createGain();
+  c.frequency.value = 1200;
+  cg.gain.setValueAtTime(g * 0.35, t);
+  cg.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+  c.connect(cg); cg.connect(master);
+  o.start(t); o.stop(t + 0.4);
+  c.start(t); c.stop(t + 0.03);
+}
 
-  // drums
-  pat.kick.forEach(i => {
-    const t = barStartTime + i * secondsPer16th + (i % 2 ? swing * secondsPer16th : 0);
-    playKick(t);
-  });
-  pat.snare.forEach(i => {
-    const t = barStartTime + i * secondsPer16th + (i % 2 ? swing * secondsPer16th : 0);
-    playSnare(t);
-  });
-  pat.hat.forEach(i => {
-    const t = barStartTime + i * secondsPer16th + (i % 2 ? swing * secondsPer16th * 0.6 : 0);
-    playHat(t, 0.18);
-  });
+function snare(t, g = 0.48) {
+  const n = ctx.createBufferSource();
+  n.buffer = noiseBuf(0.28);
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass"; bp.frequency.value = 2200; bp.Q.value = 0.9;
+  const gn = ctx.createGain();
+  gn.gain.setValueAtTime(g, t);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+  n.connect(bp); bp.connect(gn); gn.connect(master);
+  // body tone
+  const o = ctx.createOscillator();
+  const og = ctx.createGain();
+  o.frequency.value = 180;
+  og.gain.setValueAtTime(g * 0.5, t);
+  og.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+  o.connect(og); og.connect(master);
+  n.start(t); n.stop(t + 0.25);
+  o.start(t); o.stop(t + 0.15);
+}
 
-  // chord + bass (every bar, simple)
-  const rootName = params.key;
-  const rootFreq = NOTE_FREQ[rootName] || 440;
-  const prog = PROGS.chill; // simplified – always use one for now
-  const degree = prog[currentBar % prog.length];
-  const chordRoot = rootFreq * Math.pow(2, degree / 12);
+function hat(t, g = 0.22, open = false) {
+  const n = ctx.createBufferSource();
+  n.buffer = noiseBuf(open ? 0.32 : 0.07);
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass"; hp.frequency.value = 7500;
+  const gn = ctx.createGain();
+  gn.gain.setValueAtTime(g, t);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + (open ? 0.28 : 0.055));
+  n.connect(hp); hp.connect(gn); gn.connect(master);
+  n.start(t); n.stop(t + (open ? 0.32 : 0.08));
+}
 
-  playChord(barStartTime + 0.01, chordRoot, params.chordInst, 0.16);
-  playBass(barStartTime + 0.01, chordRoot, 0.32);
+function chordTone(t, freq, type, gain, dur) {
+  const voices = type === "Pad" ? 4 : 3;
+  for (let i = 0; i < voices; i++) {
+    const o = ctx.createOscillator();
+    const gn = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    f.type = "lowpass";
 
-  // vinyl noise occasionally
-  if (params.vinyl > 0.05 && Math.random() < params.vinyl * 0.4) {
-    const noise = ctx.createBufferSource();
-    noise.buffer = createNoiseBuffer(0.08);
-    const g = ctx.createGain();
-    g.gain.value = params.vinyl * 0.08;
-    noise.connect(g);
-    g.connect(masterGain);
-    noise.start(barStartTime + Math.random() * 1.5);
+    if (type === "Pad") {
+      o.type = "sawtooth";
+      o.detune.value = (i - 1.5) * 6;
+      f.frequency.value = 1400;
+      gn.gain.setValueAtTime(0, t);
+      gn.gain.linearRampToValueAtTime(gain / voices, t + 0.35);
+      gn.gain.setTargetAtTime(0.001, t + dur * 0.7, 0.4);
+    } else if (type === "Piano") {
+      o.type = "triangle";
+      o.detune.value = (i - 1) * 3;
+      f.frequency.value = 4200 - i * 400;
+      gn.gain.setValueAtTime(0, t);
+      gn.gain.linearRampToValueAtTime(gain / voices * (i === 0 ? 1.2 : 0.7), t + 0.008);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+    } else if (type === "Pluck") {
+      o.type = "triangle";
+      f.frequency.value = 3200;
+      gn.gain.setValueAtTime(0, t);
+      gn.gain.linearRampToValueAtTime(gain / voices, t + 0.004);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    } else { // Rhodes
+      o.type = "sine";
+      o.detune.value = (i - 1) * 4;
+      // soft FM-ish via second osc
+      if (i === 0) {
+        const mod = ctx.createOscillator();
+        const mg = ctx.createGain();
+        mod.frequency.value = freq * 1.4;
+        mg.gain.value = freq * 0.6;
+        mod.connect(mg); mg.connect(o.frequency);
+        mod.start(t); mod.stop(t + dur + 0.2);
+      }
+      f.frequency.value = 2800;
+      gn.gain.setValueAtTime(0, t);
+      gn.gain.linearRampToValueAtTime(gain / voices, t + 0.012);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.85);
+    }
+
+    o.frequency.value = freq * (i === 2 && type !== "Pad" ? 2 : 1); // light octave for richness on some
+    if (type === "Pad" || i < 2) o.frequency.value = freq;
+
+    o.connect(f); f.connect(gn);
+    gn.connect(master);
+    gn.connect(reverbSend);
+    o.start(t);
+    o.stop(t + dur + 0.3);
   }
+}
+
+function playChord(t, rootHz, intervals, type, gain) {
+  const dur = type === "Pad" ? 3.2 : 1.6;
+  intervals.forEach((semi, idx) => {
+    const f = rootHz * Math.pow(2, semi / 12);
+    chordTone(t + idx * 0.008, f, type, gain * (0.9 + Math.random() * 0.15), dur);
+  });
+}
+
+function bass(t, freq, g = 0.38) {
+  const o = ctx.createOscillator();
+  const o2 = ctx.createOscillator();
+  const gn = ctx.createGain();
+  o.type = "sine"; o.frequency.value = freq;
+  o2.type = "triangle"; o2.frequency.value = freq; o2.detune.value = 3;
+  gn.gain.setValueAtTime(0, t);
+  gn.gain.linearRampToValueAtTime(g, t + 0.01);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+  o.connect(gn); o2.connect(gn); gn.connect(master);
+  o.start(t); o.stop(t + 0.45);
+  o2.start(t); o2.stop(t + 0.45);
+}
+
+function melodyNote(t, freq, g = 0.14) {
+  const o = ctx.createOscillator();
+  const gn = ctx.createGain();
+  const f = ctx.createBiquadFilter();
+  o.type = "sine";
+  o.frequency.value = freq;
+  f.type = "lowpass"; f.frequency.value = 3200;
+  gn.gain.setValueAtTime(0, t);
+  gn.gain.linearRampToValueAtTime(g, t + 0.01);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+  o.connect(f); f.connect(gn); gn.connect(master); gn.connect(reverbSend);
+  o.start(t); o.stop(t + 0.6);
+}
+
+function vinylCrackle(t, amount) {
+  if (amount < 0.05 || Math.random() > amount * 0.55) return;
+  const n = ctx.createBufferSource();
+  n.buffer = noiseBuf(0.04 + Math.random() * 0.06);
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass"; bp.frequency.value = 2000 + Math.random() * 3000;
+  const gn = ctx.createGain();
+  gn.gain.value = amount * 0.07 * (0.5 + Math.random());
+  n.connect(bp); bp.connect(gn); gn.connect(master);
+  n.start(t + Math.random() * 1.8);
+}
+
+// ─── Scheduler ─────────────────────────────────────────────
+function scheduleBar(p, t0) {
+  const spb = 60 / p.bpm;
+  const s16 = spb / 4;
+  const swing = p.swing;
+  const pat = DRUM_PATS[p.drums] || DRUM_PATS.Mellow;
+  const dv = p.drumsVol;
+
+  const when = (i) => t0 + i * s16 + ((i % 2) ? swing * s16 : 0);
+
+  pat.k.forEach(i => kick(when(i), 0.82 * dv));
+  pat.s.forEach(i => snare(when(i), 0.48 * dv));
+  pat.h.forEach(i => hat(when(i), 0.20 * dv, false));
+  pat.o.forEach(i => hat(when(i), 0.28 * dv, true));
+
+  // progression
+  const prog = PROGS[p.prog] || PROGS.chill;
+  const [deg, iv] = prog[barCount % prog.length];
+  const rootName = p.key;
+  const rootHz = (NOTE[rootName] || 440) * Math.pow(2, deg / 12);
+  // place chord in a comfortable octave
+  const chordRoot = rootHz * (rootHz < 200 ? 2 : rootHz > 400 ? 0.5 : 1);
+
+  playChord(t0 + 0.01, chordRoot, iv, p.chordInst, 0.17);
+  bass(t0 + 0.01, chordRoot / 2, 0.36);
+
+  // simple melody on scale
+  if (p.melody > 0.05) {
+    const scale = SCALES[p.scale] || SCALES.minorPent;
+    const steps = [0, 2, 4, 7, 8, 10, 12, 14];
+    steps.forEach((st, idx) => {
+      if (Math.random() > 0.35 + p.melody * 0.45) return;
+      const degree = scale[Math.floor(Math.random() * scale.length)];
+      const oct = Math.random() > 0.7 ? 1 : 0;
+      const freq = chordRoot * Math.pow(2, (degree + 12 * oct) / 12);
+      melodyNote(when(st), freq, 0.11 * p.melody);
+    });
+  }
+
+  vinylCrackle(t0, p.vinyl);
 }
 
 function scheduler() {
-  const params = getParams();
-  const secondsPerBar = (60 / params.bpm) * 4;
+  const p = getP();
+  filterNode.frequency.setTargetAtTime(p.filter, ctx.currentTime, 0.05);
+  reverbReturn.gain.setTargetAtTime(p.reverb * 0.55, ctx.currentTime, 0.08);
 
-  while (nextNoteTime < ctx.currentTime + 0.15) {
-    scheduleBar(params, nextNoteTime);
-    nextNoteTime += secondsPerBar;
-    currentBar++;
+  const barDur = (60 / p.bpm) * 4;
+  while (nextTime < ctx.currentTime + 0.18) {
+    scheduleBar(p, nextTime);
+    nextTime += barDur;
+    barCount++;
+    $("barInfo").textContent = `Bar ${barCount}`;
   }
-  timerID = setTimeout(scheduler, 40);
+  timerID = setTimeout(scheduler, 35);
 }
 
-function start() {
-  if (!ctx) {
-    ctx = new AudioContext();
-    setupEffects();
+// ─── Visualizer ────────────────────────────────────────────
+function drawViz() {
+  if (!analyser) return;
+  const canvas = $("viz");
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
   }
-  if (ctx.state === "suspended") ctx.resume();
+  const g = canvas.getContext("2d");
+  const buf = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(buf);
 
-  const params = getParams();
-  filterNode.frequency.value = params.filter;
-  // update reverb wet roughly
-  nextNoteTime = ctx.currentTime + 0.08;
-  currentBar = 0;
+  g.clearRect(0, 0, w, h);
+  const bars = 48;
+  const step = Math.floor(buf.length / bars);
+  const bw = w / bars - 2;
+
+  for (let i = 0; i < bars; i++) {
+    let sum = 0;
+    for (let j = 0; j < step; j++) sum += buf[i * step + j];
+    const v = sum / step / 255;
+    const bh = Math.max(2, v * h * 0.92);
+    const x = i * (bw + 2);
+    const y = h - bh;
+    const grad = g.createLinearGradient(0, y, 0, h);
+    grad.addColorStop(0, "rgba(124,156,255,0.95)");
+    grad.addColorStop(1, "rgba(167,139,250,0.35)");
+    g.fillStyle = grad;
+    g.beginPath();
+    g.roundRect(x, y, bw, bh, 3);
+    g.fill();
+  }
+  animID = requestAnimationFrame(drawViz);
+}
+
+// ─── Transport ─────────────────────────────────────────────
+function start() {
+  ensureCtx();
+  if (ctx.state === "suspended") ctx.resume();
+  nextTime = ctx.currentTime + 0.1;
+  barCount = 0;
   isPlaying = true;
-  document.getElementById("playBtn").textContent = "■ Stop";
-  document.getElementById("playBtn").classList.add("playing");
-  document.getElementById("status").textContent = "Playing…";
+  $("playBtn").classList.add("playing");
+  $("playBtn").querySelector(".icon").textContent = "■";
+  $("playBtn").querySelector(".label").textContent = "Stop";
+  $("status").textContent = "Playing";
   scheduler();
+  if (!animID) drawViz();
 }
 
 function stop() {
   isPlaying = false;
   clearTimeout(timerID);
-  document.getElementById("playBtn").textContent = "▶ Play";
-  document.getElementById("playBtn").classList.remove("playing");
-  document.getElementById("status").textContent = "Stopped";
+  $("playBtn").classList.remove("playing");
+  $("playBtn").querySelector(".icon").textContent = "▶";
+  $("playBtn").querySelector(".label").textContent = "Play";
+  $("status").textContent = "Stopped";
+  $("barInfo").textContent = "—";
 }
 
-// ── UI wiring ──
-document.getElementById("playBtn").addEventListener("click", () => {
-  if (isPlaying) stop();
-  else start();
-});
+// ─── Offline WAV export ────────────────────────────────────
+function floatTo16BitPCM(input) {
+  const buf = new ArrayBuffer(input.length * 2);
+  const view = new DataView(buf);
+  for (let i = 0; i < input.length; i++) {
+    const s = Math.max(-1, Math.min(1, input[i]));
+    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buf;
+}
 
-document.getElementById("preset").addEventListener("change", (e) => {
-  const p = PRESETS[e.target.value];
-  if (!p) return;
-  document.getElementById("bpm").value = p.bpm;
-  document.getElementById("key").value = p.key;
-  document.getElementById("swing").value = p.swing;
-  document.getElementById("reverb").value = p.reverb;
-  document.getElementById("vinyl").value = p.vinyl;
-  document.getElementById("filter").value = p.filter;
-  document.getElementById("chordInst").value = p.chordInst;
-  document.getElementById("drums").value = p.drums;
+function encodeWav(left, right, sr) {
+  const len = left.length;
+  const ab = new ArrayBuffer(44 + len * 4);
+  const v = new DataView(ab);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + len * 4, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true);
+  v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, len * 4, true);
+  const pcmL = floatTo16BitPCM(left);
+  const pcmR = floatTo16BitPCM(right);
+  const u8 = new Uint8Array(ab);
+  const l8 = new Uint8Array(pcmL);
+  const r8 = new Uint8Array(pcmR);
+  for (let i = 0, o = 44; i < len; i++, o += 4) {
+    u8[o] = l8[i * 2]; u8[o + 1] = l8[i * 2 + 1];
+    u8[o + 2] = r8[i * 2]; u8[o + 3] = r8[i * 2 + 1];
+  }
+  return ab;
+}
+
+async function renderAndDownload() {
+  const btn = $("downloadBtn");
+  btn.disabled = true;
+  btn.textContent = "Rendering…";
+  $("status").textContent = "Rendering…";
+
+  try {
+    const secs = +$("exportLen").value;
+    const p = getP();
+    const sr = 44100;
+    const offline = new OfflineAudioContext(2, sr * secs, sr);
+
+    // rebuild a minimal graph inside offline context
+    const oMaster = offline.createGain(); oMaster.gain.value = 0.7;
+    const oFilter = offline.createBiquadFilter();
+    oFilter.type = "lowpass"; oFilter.frequency.value = p.filter;
+    oMaster.connect(oFilter); oFilter.connect(offline.destination);
+
+    // temporary swap globals so schedule helpers work (hacky but effective)
+    const oldCtx = ctx, oldMaster = master, oldSend = reverbSend;
+    ctx = offline; master = oMaster; reverbSend = offline.createGain(); // dry only for offline simplicity
+
+    let t = 0.05;
+    const barDur = (60 / p.bpm) * 4;
+    let bar = 0;
+    const savedBar = barCount;
+    barCount = 0;
+    while (t < secs - 0.5) {
+      scheduleBar(p, t);
+      t += barDur;
+      barCount++;
+    }
+    barCount = savedBar;
+
+    const rendered = await offline.startRendering();
+    ctx = oldCtx; master = oldMaster; reverbSend = oldSend;
+
+    const left = rendered.getChannelData(0);
+    const right = rendered.getChannelData(1);
+    const wav = encodeWav(left, right, sr);
+    const blob = new Blob([wav], { type: "audio/wav" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `lofi_${p.key}_${p.bpm}bpm_${secs}s.wav`;
+    a.click();
+    URL.revokeObjectURL(url);
+    $("status").textContent = "Downloaded";
+  } catch (e) {
+    console.error(e);
+    $("status").textContent = "Render failed";
+    alert("Export failed: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Download WAV";
+  }
+}
+
+// ─── UI wiring ─────────────────────────────────────────────
+function applyPreset(name) {
+  const pr = PRESETS[name];
+  if (!pr) return;
+  $("bpm").value = pr.bpm;
+  $("key").value = pr.key;
+  $("swing").value = pr.swing;
+  $("melody").value = pr.melody;
+  $("filter").value = pr.filter;
+  $("reverb").value = pr.reverb;
+  $("vinyl").value = pr.vinyl;
+  $("drumsVol").value = pr.drumsVol;
+  $("chordInst").value = pr.chordInst;
+  $("drums").value = pr.drums;
+  window._prog = pr.prog;
+  window._scale = pr.scale;
   updateLabels();
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.p === name));
+}
+
+function randomize() {
+  const keys = Object.keys(PRESETS);
+  const name = keys[Math.floor(Math.random() * keys.length)];
+  applyPreset(name);
+  // small random drift
+  $("bpm").value = Math.min(98, Math.max(58, +$("bpm").value + Math.floor(Math.random() * 7) - 3));
+  $("swing").value = Math.min(0.4, Math.max(0, +$("swing").value + (Math.random() - 0.5) * 0.08));
+  $("filter").value = Math.min(10000, Math.max(2000, +$("filter").value + Math.floor(Math.random() * 800) - 400));
+  updateLabels();
+}
+
+$("playBtn").addEventListener("click", () => isPlaying ? stop() : start());
+$("downloadBtn").addEventListener("click", renderAndDownload);
+$("randomBtn").addEventListener("click", randomize);
+
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => applyPreset(chip.dataset.p));
 });
 
-["bpm", "swing", "reverb", "vinyl", "filter"].forEach(id => {
-  document.getElementById(id).addEventListener("input", updateLabels);
-});
-
-document.getElementById("downloadBtn").addEventListener("click", () => {
-  alert("In this web version, use your browser’s or OS recorder, or we can add offline WAV rendering later.\n\nFor now the live engine is the main feature.");
+["bpm", "swing", "melody", "filter", "reverb", "vinyl", "drumsVol"].forEach(id => {
+  $(id).addEventListener("input", updateLabels);
 });
 
 // init
+window._prog = "chill";
+window._scale = "minorPent";
 updateLabels();
-document.getElementById("status").textContent = "Ready – tap Play";
+$("status").textContent = "Ready";
