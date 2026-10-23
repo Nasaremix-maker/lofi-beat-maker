@@ -106,13 +106,22 @@ function audible(part,p){
 
 function ensureCtx(){
   if(ctx)return;
-  ctx=new AC({latencyHint:"interactive"});
-  master=ctx.createGain();master.gain.value=0.85;
+  ctx=new AC({latencyHint:"interactive", sampleRate: 44100});
+  master=ctx.createGain();master.gain.value=0.8;
   musicGain=ctx.createGain();musicGain.gain.value=1;
-  filterNode=ctx.createBiquadFilter();filterNode.type="lowpass";filterNode.frequency.value=5600;filterNode.Q.value=0.7;
-  eqLow=ctx.createBiquadFilter();eqLow.type="lowshelf";eqLow.frequency.value=200;
-  eqMid=ctx.createBiquadFilter();eqMid.type="peaking";eqMid.frequency.value=1000;eqMid.Q.value=0.8;
-  eqHigh=ctx.createBiquadFilter();eqHigh.type="highshelf";eqHigh.frequency.value=4000;
+  // soft limiter / dynamics
+  try {
+    window._limiter = ctx.createDynamicsCompressor();
+    window._limiter.threshold.value = -8;
+    window._limiter.knee.value = 12;
+    window._limiter.ratio.value = 4;
+    window._limiter.attack.value = 0.003;
+    window._limiter.release.value = 0.15;
+  } catch(e) { window._limiter = null; }
+  filterNode=ctx.createBiquadFilter();filterNode.type="lowpass";filterNode.frequency.value=5600;filterNode.Q.value=0.65;
+  eqLow=ctx.createBiquadFilter();eqLow.type="lowshelf";eqLow.frequency.value=180;
+  eqMid=ctx.createBiquadFilter();eqMid.type="peaking";eqMid.frequency.value=1100;eqMid.Q.value=0.7;
+  eqHigh=ctx.createBiquadFilter();eqHigh.type="highshelf";eqHigh.frequency.value=4200;
   reverbSend=ctx.createGain();reverbReturn=ctx.createGain();reverbReturn.gain.value=0.35;
   const d1=ctx.createDelay(1);d1.delayTime.value=0.27;const d2=ctx.createDelay(1);d2.delayTime.value=0.39;const d3=ctx.createDelay(1);d3.delayTime.value=0.53;
   const fb=ctx.createGain();fb.gain.value=0.38;const lp=ctx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4500;
@@ -122,13 +131,19 @@ function ensureCtx(){
   window._echoWet=echoWet;window._echoFb=echoFb;window._echoNode=echoNode;window._revFb=fb;window._revLp=lp;
   analyser=ctx.createAnalyser();analyser.fftSize=512;analyser.smoothingTimeConstant=0.72;
   musicGain.connect(filterNode);filterNode.connect(eqLow);eqLow.connect(eqMid);eqMid.connect(eqHigh);eqHigh.connect(master);
-  master.connect(analyser);analyser.connect(ctx.destination);
+  if(window._limiter){master.connect(window._limiter);window._limiter.connect(analyser);}else{master.connect(analyser);}
+  analyser.connect(ctx.destination);
 }
 function unlockAudio(){
   ensureCtx();
   if(audioUnlocked&&ctx.state==="running")return Promise.resolve();
-  const silent=ctx.createBuffer(1,1,ctx.sampleRate);const src=ctx.createBufferSource();src.buffer=silent;src.connect(ctx.destination);try{src.start(0)}catch(e){}
-  return ctx.resume().then(()=>{audioUnlocked=true}).catch(()=>{audioUnlocked=true});
+  // multiple unlock strategies for iOS
+  const silent=ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate*0.05)), ctx.sampleRate);
+  const src=ctx.createBufferSource();src.buffer=silent;src.connect(ctx.destination);
+  try{src.start(0)}catch(e){}
+  const o=ctx.createOscillator();const g=ctx.createGain();g.gain.value=0.0001;o.connect(g);g.connect(ctx.destination);
+  try{o.start(0);o.stop(ctx.currentTime+0.05)}catch(e){}
+  return ctx.resume().then(()=>{audioUnlocked=true; if(ctx.state!=="running") return ctx.resume();}).catch(()=>{audioUnlocked=true});
 }
 function noiseBuf(dur){const n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=rng()*2-1;return b}
 
@@ -259,10 +274,11 @@ function scheduler(){
   if(eqMid)eqMid.gain.setTargetAtTime(p.eqMid,ctx.currentTime,0.05);
   if(eqHigh)eqHigh.gain.setTargetAtTime(p.eqHigh,ctx.currentTime,0.05);
   const barDur=(60/p.bpm)*4;
-  while(nextTime<ctx.currentTime+0.18){scheduleBar(p,nextTime);nextTime+=barDur;barCount++;$("barInfo").textContent=`Bar ${barCount}`}
+  const look = 0.25;
+  while(nextTime<ctx.currentTime+look){scheduleBar(p,nextTime);nextTime+=barDur;barCount++;if(barCount%1===0)$("barInfo").textContent=`Bar ${barCount}`}
   if(sleepEnd){const left=sleepEnd-Date.now();if(left<120000&&left>0&&master){master.gain.setTargetAtTime(p.masterVol*(left/120000),ctx.currentTime,0.2)}if(left<=0){stop();$("status").textContent="Sleep timer ended";sleepEnd=0;return}}
   if(pomEnd&&Date.now()>pomEnd){pomBreak=!pomBreak;const mins=+$("pomodoro").value||25;pomEnd=Date.now()+(pomBreak?Math.round(mins/5):mins)*60000;$("pomVal").textContent=pomBreak?"Break":"Focus";$("status").textContent=pomBreak?"Pomodoro break":"Focus time"}
-  timerID=setTimeout(scheduler,30);
+  timerID=setTimeout(scheduler,25);
 }
 
 function drawViz(){
@@ -448,4 +464,4 @@ $("installDismiss")?.addEventListener("click",()=>$("installBanner").classList.a
 buildProgSelect();buildPresetChips();buildPiano();renderPlaylist();
 if(!loadFromHash())loadSettings()||applyPreset("chill",null,true);
 try{themeIdx=+(localStorage.getItem("lofi_theme")||0)%THEMES.length;const t=THEMES[themeIdx];document.documentElement.style.setProperty("--accent",t.accent);document.documentElement.style.setProperty("--accent-2",t.accent2)}catch(e){}
-updateLabels();setSeed($("seed").value||"1");$("status").textContent="Ready · Pro Studio";
+updateLabels();setSeed($("seed").value||"1");$("status").textContent="Ready";
