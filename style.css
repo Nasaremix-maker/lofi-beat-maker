@@ -629,3 +629,60 @@ button:focus:not(:focus-visible), input:focus:not(:focus-visible), select:focus:
   border-color: var(--accent);
   color: #fff;
 }
+
+/* Atmosphere mute bar */
+.atmos-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: rgba(16,16,26,0.7);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+}
+.atmos-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+}
+.atmos-btn {
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #1a1a28;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-dim);
+  transition: all 0.15s ease;
+}
+.atmos-btn.active {
+  background: rgba(52,211,153,0.15);
+  border-color: rgba(52,211,153,0.45);
+  color: #34d399;
+}
+.atmos-btn:not(.active) {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+.atmos-btn.all-off {
+  margin-left: auto;
+  background: transparent;
+  border-color: rgba(255,107,122,0.3);
+  color: #ff6b7a;
+}
+.atmos-btn.all-off:hover {
+  background: rgba(255,107,122,0.12);
+}
+.pad-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (min-width: 420px) {
+  .pad-controls { grid-template-columns: 1fr 1fr 1fr 1fr; }
+}

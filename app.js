@@ -524,10 +524,63 @@ function bass(t,freq,g,style,s16){
   else if(style==="walk")[0,4,8,12].forEach((i,n)=>play(t+i*s16,freq*Math.pow(2,[0,0.25,0.5,0.25][n]/12),g*0.8));
 }
 function melodyNote(t,freq,g){const o=ctx.createOscillator(),gn=ctx.createGain(),f=ctx.createBiquadFilter();o.type="sine";o.frequency.value=freq;f.type="lowpass";f.frequency.value=3400;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(g,t+0.012);gn.gain.exponentialRampToValueAtTime(0.001,t+0.5);o.connect(f);f.connect(gn);gn.connect(musicGain);gn.connect(reverbSend);o.start(t);o.stop(t+0.55)}
-function ambientBed(t,amt){if(amt<0.02)return;const n=ctx.createBufferSource();n.buffer=noiseBuf(2.2);const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=600;bp.Q.value=0.3;const gn=ctx.createGain();gn.gain.value=amt*0.08;n.connect(bp);bp.connect(gn);gn.connect(master);n.start(t);n.stop(t+2.2)}
-function vinylFX(t,p){if(!p.vinylOn)return;if(p.crackle>0.05&&rng()<p.crackle*0.5){const n=ctx.createBufferSource();n.buffer=noiseBuf(0.04);const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1800+rng()*3500;const gn=ctx.createGain();gn.gain.value=0.05*p.crackle;n.connect(bp);bp.connect(gn);gn.connect(master);n.start(t+rng()*1.5)}
-  if(p.hiss>0.05){const n=ctx.createBufferSource();n.buffer=noiseBuf(0.5);const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=6000;const gn=ctx.createGain();gn.gain.value=0.012*p.hiss;n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+0.5)}}
-function rainLayer(t,p){if(p.rainAmt<0.05)return;const n=ctx.createBufferSource();n.buffer=noiseBuf(2);const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=4000;const gn=ctx.createGain();const pan=ctx.createStereoPanner();pan.pan.value=(rng()-0.5)*p.rainWidth;gn.gain.value=0.04*p.rainAmt;n.connect(bp);bp.connect(gn);gn.connect(pan);pan.connect(master);n.start(t);n.stop(t+2)}
+// Atmosphere mute state (true = audible). Randomize will skip muted layers.
+const atmosMute = { vinyl:true, crackle:true, hiss:true, rain:true, ambient:true };
+
+function ambientBed(t,amt){
+  if(!atmosMute.ambient || amt<0.02)return;
+  const n=ctx.createBufferSource();n.buffer=noiseBuf(2.2);
+  const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=600;bp.Q.value=0.3;
+  const gn=ctx.createGain();gn.gain.value=amt*0.08;
+  n.connect(bp);bp.connect(gn);gn.connect(master);n.start(t);n.stop(t+2.2);
+}
+function vinylFX(t,p){
+  if(!atmosMute.vinyl || !p.vinylOn)return;
+  if(atmosMute.crackle && p.crackle>0.05&&rng()<p.crackle*0.5){
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.04);
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1800+rng()*3500;
+    const gn=ctx.createGain();gn.gain.value=0.05*p.crackle;
+    n.connect(bp);bp.connect(gn);gn.connect(master);n.start(t+rng()*1.5);
+  }
+  if(atmosMute.hiss && p.hiss>0.05){
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.5);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=6000;
+    const gn=ctx.createGain();gn.gain.value=0.012*p.hiss;
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+0.5);
+  }
+}
+function rainLayer(t,p){
+  if(!atmosMute.rain || p.rainAmt<0.05)return;
+  const n=ctx.createBufferSource();n.buffer=noiseBuf(2);
+  const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=4000;
+  const gn=ctx.createGain();const pan=ctx.createStereoPanner();
+  pan.pan.value=(rng()-0.5)*(p.rainWidth||0.5);gn.gain.value=0.04*p.rainAmt;
+  n.connect(bp);bp.connect(gn);gn.connect(pan);pan.connect(master);n.start(t);n.stop(t+2);
+}
+function initAtmosMutes(){
+  const sync=()=>{
+    ["vinyl","crackle","hiss","rain","ambient"].forEach(key=>{
+      const id="mute"+key.charAt(0).toUpperCase()+key.slice(1);
+      const b=$(id); if(b) b.classList.toggle("active", !!atmosMute[key]);
+    });
+  };
+  ["vinyl","crackle","hiss","rain","ambient"].forEach(key=>{
+    const id="mute"+key.charAt(0).toUpperCase()+key.slice(1);
+    $(id)?.addEventListener("click",()=>{
+      atmosMute[key]=!atmosMute[key];
+      sync();
+      $("status").textContent = key.charAt(0).toUpperCase()+key.slice(1)+(atmosMute[key]?" on":" muted");
+    });
+  });
+  $("muteAllAtmos")?.addEventListener("click",()=>{
+    const anyOn=Object.values(atmosMute).some(Boolean);
+    Object.keys(atmosMute).forEach(k=>atmosMute[k]=!anyOn);
+    if($("vinylOn")) $("vinylOn").checked=!anyOn;
+    sync();
+    $("status").textContent=anyOn?"Atmosphere muted":"Atmosphere on";
+  });
+  sync();
+}
 function schedulePump(t,amount,shape){if(amount<0.05)return;const now=Math.max(t,ctx.currentTime);const depth=1-amount*0.75;const atk=shape==="fast"?0.01:shape==="slow"?0.06:0.02;const rel=shape==="fast"?0.08:shape==="slow"?0.22:0.12;musicGain.gain.cancelScheduledValues(now);musicGain.gain.setValueAtTime(musicGain.gain.value,now);musicGain.gain.linearRampToValueAtTime(depth,now+atk);musicGain.gain.setTargetAtTime(1,now+atk+0.02,rel)}
 
 function scheduleBar(p,t0){
@@ -702,9 +755,28 @@ function shareLink(){const raw=JSON.stringify(collectSettings());const hash=btoa
 function loadFromHash(){if(!location.hash.includes("p="))return false;try{const h=location.hash.split("p=")[1];const s=JSON.parse(decodeURIComponent(escape(atob(h))));applyPreset(s.preset||"chill",{...(PRESETS[s.preset]||{}),...s},true);return true}catch(e){return false}}
 function randomize(){
   pushUndo();
+  // Snapshot atmosphere values so muted layers are not changed
+  const snap={
+    ambient: $("ambient")?.value,
+    crackle: $("crackle")?.value,
+    hiss: $("hiss")?.value,
+    rainAmt: $("rainAmt")?.value,
+    rainWidth: $("rainWidth")?.value,
+    vinylOn: $("vinylOn")?.checked
+  };
   const genrePool = GENRE_PRESETS[currentGenre] || Object.keys(PRESETS);
   const name = genrePool[Math.floor(Math.random()*genrePool.length)];
   applyPreset(name);
+  // Restore any muted atmosphere layers
+  if(!atmosMute.ambient && $("ambient") && snap.ambient!==undefined) $("ambient").value=snap.ambient;
+  if(!atmosMute.crackle && $("crackle") && snap.crackle!==undefined) $("crackle").value=snap.crackle;
+  if(!atmosMute.hiss && $("hiss") && snap.hiss!==undefined) $("hiss").value=snap.hiss;
+  if(!atmosMute.rain && $("rainAmt") && snap.rainAmt!==undefined){
+    $("rainAmt").value=snap.rainAmt;
+    if($("rainWidth") && snap.rainWidth!==undefined) $("rainWidth").value=snap.rainWidth;
+  }
+  if(!atmosMute.vinyl && $("vinylOn") && snap.vinylOn!==undefined) $("vinylOn").checked=snap.vinylOn;
+
   const inten=$("randIntensity").value;
   const amt=inten==="subtle"?3:inten==="chaotic"?12:6;
   const bpmMax = currentGenre==="dnb"?180:currentGenre==="hiphop"?105:currentGenre==="reggae"?90:currentGenre==="jazz"?140:110;
@@ -901,14 +973,46 @@ function fxHit(t, g) {
   o.connect(f); f.connect(gn); gn.connect(master); o.start(t); o.stop(t + 0.5);
 }
 
+function getPadStyle(){
+  const kit = $("padKit")?.value || "lofi";
+  const color = $("padColor")?.value || "neutral";
+  const decay = $("padDecay")?.value || "medium";
+  // gain / filter / length multipliers
+  const kits = {
+    lofi:       {g:0.9,  f:0.85, d:1.0,  bright:0.7},
+    boom:       {g:1.05, f:0.7,  d:1.15, bright:0.55},
+    tight:      {g:1.0,  f:1.15, d:0.65, bright:1.1},
+    soft:       {g:0.75, f:0.65, d:1.3,  bright:0.5},
+    bright:     {g:0.95, f:1.35, d:0.8,  bright:1.35},
+    heavy:      {g:1.15, f:0.55, d:1.4,  bright:0.4},
+    vintage:    {g:0.85, f:0.6,  d:1.2,  bright:0.45},
+    electronic: {g:1.0,  f:1.25, d:0.75, bright:1.2}
+  };
+  const colors = {
+    warm:     {f:0.75, bright:0.7},
+    neutral:  {f:1.0,  bright:1.0},
+    bright:   {f:1.25, bright:1.3},
+    dark:     {f:0.55, bright:0.5},
+    metallic: {f:1.4,  bright:1.4}
+  };
+  const decays = { short:0.55, medium:1.0, long:1.55 };
+  const k = kits[kit] || kits.lofi;
+  const c = colors[color] || colors.neutral;
+  return {
+    gainMul: k.g,
+    filtMul: k.f * c.f,
+    decayMul: k.d * (decays[decay]||1),
+    bright: k.bright * c.bright
+  };
+}
+
 function triggerPad(id, velocity = 0.85, time = null) {
   ensureCtx();
   const t = time ?? ctx.currentTime;
   const pitch = +($("padPitch")?.value || 0);
-  const rate = Math.pow(2, pitch / 12);
-  const filt = +($("padFilt")?.value || 8000);
   const hum = +($("padHum")?.value || 0.15);
   const vel = velocity * (+($("padVel")?.value || 0.85));
+  const style = getPadStyle();
   const jitter = (Math.random() - 0.5) * hum * 0.03;
   const when = t + jitter;
 
@@ -919,18 +1023,22 @@ function triggerPad(id, velocity = 0.85, time = null) {
     setTimeout(() => el.classList.remove("hit"), 120);
   }
 
-  const g = vel * 0.9;
+  const g = vel * 0.9 * style.gainMul;
+  // Temporarily bias genre synthesis toward pad style by adjusting a fake p for kick/snare
+  const baseP = getP();
+  const p = {...baseP, kickDecay: Math.min(1, (baseP.kickDecay||0.5)*style.decayMul), kickClick: Math.min(1,(baseP.kickClick||0.4)*style.bright), snareTone: Math.min(1,(baseP.snareTone||0.5)*style.bright)};
+
   switch (id) {
-    case "k": case "k2": kick(when, g, getP()); break;
-    case "s": case "s2": snare(when, g, getP()); break;
-    case "h": case "h2": hat(when, g * 0.85, false, 1); break;
-    case "o": hat(when, g, true, 1); break;
-    case "c": case "c2": clap(when, g); break;
-    case "r": case "r2": rim(when, g); break;
-    case "t": tom(when, g, false); break;
-    case "t2": tom(when, g, true); break;
-    case "p": perc(when, g); break;
-    case "p2": shaker(when, g); break;
+    case "k": case "k2": kick(when, g, p); break;
+    case "s": case "s2": snare(when, g, p); break;
+    case "h": case "h2": hat(when, g * 0.85 * style.bright, false, 1); break;
+    case "o": hat(when, g * style.bright, true, 1); break;
+    case "c": case "c2": clap(when, g * style.bright); break;
+    case "r": case "r2": rim(when, g * style.bright); break;
+    case "t": tom(when, g * style.decayMul, false); break;
+    case "t2": tom(when, g * style.decayMul, true); break;
+    case "p": perc(when, g * style.bright); break;
+    case "p2": shaker(when, g * style.bright); break;
     case "fx": fxHit(when, g); break;
     default: perc(when, g);
   }
@@ -1157,5 +1265,6 @@ if(!loadFromHash())loadSettings()||applyPreset("chill",null,true);
 try{themeIdx=+(localStorage.getItem("lofi_theme")||0)%THEMES.length;const t=THEMES[themeIdx];document.documentElement.style.setProperty("--accent",t.accent);document.documentElement.style.setProperty("--accent-2",t.accent2)}catch(e){}
 updateLabels();setSeed($("seed").value||"1");$("status").textContent="Ready";
 
-// Launch beat pad
+// Launch beat pad + atmosphere mutes
 initBeatPad();
+initAtmosMutes();

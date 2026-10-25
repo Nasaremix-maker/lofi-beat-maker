@@ -35,6 +35,16 @@
       </div>
     </header>
 
+    <div class="atmos-bar" id="atmosBar">
+      <span class="atmos-label">Atmosphere</span>
+      <button type="button" class="atmos-btn active" data-atmos="vinyl" id="muteVinyl" title="Vinyl / surface noise">Vinyl</button>
+      <button type="button" class="atmos-btn active" data-atmos="crackle" id="muteCrackle" title="Vinyl crackle">Crackle</button>
+      <button type="button" class="atmos-btn active" data-atmos="hiss" id="muteHiss" title="Tape hiss">Hiss</button>
+      <button type="button" class="atmos-btn active" data-atmos="rain" id="muteRain" title="Rain layer">Rain</button>
+      <button type="button" class="atmos-btn active" data-atmos="ambient" id="muteAmbient" title="Ambient bed">Ambient</button>
+      <button type="button" class="atmos-btn all-off" id="muteAllAtmos" title="Mute all atmosphere">All Off</button>
+    </div>
+
     <div class="viz-card">
       <div class="viz-tabs">
         <button class="viz-tab active" data-mode="spectrum">Spectrum</button>
@@ -258,14 +268,16 @@
       <div class="card-body">
         <div class="pad-controls">
           <div class="field">
-            <label>Kit</label>
+            <label>Pad Sound</label>
             <select id="padKit" class="select">
-              <option value="lofi">Lofi Classic</option>
-              <option value="boom">Boom Bap</option>
-              <option value="trap">Trap / Modern</option>
-              <option value="jazz">Jazz Brushes</option>
+              <option value="lofi">Lofi Dusty</option>
+              <option value="boom">Boom Bap Fat</option>
+              <option value="tight">Tight / Punchy</option>
+              <option value="soft">Soft / Acoustic</option>
+              <option value="bright">Bright / Crisp</option>
+              <option value="heavy">Heavy Sub</option>
+              <option value="vintage">Vintage Tape</option>
               <option value="electronic">Electronic</option>
-              <option value="custom">Custom Samples</option>
             </select>
           </div>
           <div class="field">
@@ -274,6 +286,24 @@
               <option value="live">Live Trigger</option>
               <option value="seq">Sequencer</option>
               <option value="both">Live + Seq</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Pad Color</label>
+            <select id="padColor" class="select">
+              <option value="warm">Warm</option>
+              <option value="neutral" selected>Neutral</option>
+              <option value="bright">Bright</option>
+              <option value="dark">Dark</option>
+              <option value="metallic">Metallic</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Pad Decay</label>
+            <select id="padDecay" class="select">
+              <option value="short">Short</option>
+              <option value="medium" selected>Medium</option>
+              <option value="long">Long</option>
             </select>
           </div>
         </div>
