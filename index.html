@@ -46,24 +46,33 @@
     </div>
 
     <div class="viz-card">
-      <div class="viz-tabs">
-        <button class="viz-tab active" data-mode="spectrum">Spectrum</button>
-        <button class="viz-tab" data-mode="scope">Scope</button>
-        <button class="viz-tab" data-mode="bars">Bars</button>
-        <button class="viz-tab" data-mode="mirror">Mirror</button>
-        <button class="viz-tab" data-mode="radial">Radial</button>
-        <button class="viz-tab" data-mode="wave3d">Wave</button>
-        <button class="viz-tab" data-mode="particles">Particles</button>
-        <button class="viz-tab" data-mode="vu">VU</button>
-      </div>
-      <div class="viz-colors">
-        <label class="tiny-label">Viz color</label>
-        <input type="color" id="vizColor" value="#7c9cff" title="Visualizer color" />
-        <label class="tiny-label">BG</label>
-        <input type="color" id="bgColor" value="#05050a" title="Background color" />
-        <label class="tiny-label">Accent</label>
-        <input type="color" id="accentColor" value="#7c9cff" title="Accent color" />
-        <button type="button" class="ghost-btn tiny" id="radioBtn" title="Radio mode — continuous genre play">Radio Off</button>
+      <div class="viz-toolbar">
+        <select id="vizModeSelect" class="select-sm" title="Visualizer">
+          <option value="spectrum">Spectrum</option>
+          <option value="scope">Scope</option>
+          <option value="bars">Bars</option>
+          <option value="mirror">Mirror</option>
+          <option value="radial">Radial</option>
+          <option value="wave3d">Wave</option>
+          <option value="particles">Particles</option>
+          <option value="vu">VU Meter</option>
+        </select>
+        <select id="bgPattern" class="select-sm" title="Background pattern">
+          <option value="none">BG: Solid</option>
+          <option value="dots" selected>BG: Dots</option>
+          <option value="grid">BG: Grid</option>
+          <option value="noise">BG: Noise</option>
+          <option value="waves">BG: Waves</option>
+        </select>
+        <select id="layoutMode" class="select-sm" title="Layout">
+          <option value="auto">Layout: Auto</option>
+          <option value="mobile">Mobile</option>
+          <option value="desktop">Desktop</option>
+        </select>
+        <input type="color" id="vizColor" value="#7c9cff" title="Viz color" class="color-sm" />
+        <input type="color" id="bgColor" value="#0c0c14" title="Background" class="color-sm" />
+        <input type="color" id="accentColor" value="#7c9cff" title="Accent" class="color-sm" />
+        <button type="button" class="ghost-btn tiny" id="radioBtn" title="Radio mode">Radio Off</button>
       </div>
       <canvas id="viz"></canvas>
       <div class="meters">

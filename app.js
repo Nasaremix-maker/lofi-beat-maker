@@ -51,8 +51,9 @@ hh_classic:{bpm:96,key:"F",scale:"minorPent",swing:0.22,humanize:0.35,melody:0.3
 trap_dark:{bpm:140,key:"A#",scale:"naturalMin",swing:0.08,humanize:0.2,melody:0.22,filter:3800,reverb:0.35,pump:0.6,echo:0.2,width:0.5,drumsVol:0.92,masterVol:0.9,chordInst:"Pad",drums:"Trap",prog:"Borrowed Dark",chordRhythm:"half",bassStyle:"sparse",structureOn:true},
 trap_melodic:{bpm:145,key:"D",scale:"minorPent",swing:0.06,humanize:0.18,melody:0.4,filter:5200,reverb:0.4,pump:0.55,echo:0.25,width:0.55,drumsVol:0.85,masterVol:0.88,chordInst:"Bell",drums:"Trap",prog:"Minor Drift",chordRhythm:"stabs",bassStyle:"fifth",structureOn:true},
 // Reggae
-reggae_one:{bpm:78,key:"A",scale:"majorPent",swing:0.15,humanize:0.25,melody:0.35,filter:6200,reverb:0.3,pump:0.2,echo:0.15,width:0.5,drumsVol:0.8,masterVol:0.85,chordInst:"Rhodes",drums:"Reggae",prog:"Two Chord",chordRhythm:"offbeat",bassStyle:"root",structureOn:true},
-reggae_dub:{bpm:72,key:"G",scale:"dorian",swing:0.12,humanize:0.3,melody:0.28,filter:4800,reverb:0.55,pump:0.25,echo:0.35,width:0.6,drumsVol:0.75,masterVol:0.85,chordInst:"Pad",drums:"Reggae",prog:"Lofi Classic",chordRhythm:"half",bassStyle:"fifth",structureOn:true},
+reggae_one:{bpm:76,key:"A",scale:"majorPent",swing:0.12,humanize:0.22,melody:0.3,filter:6000,reverb:0.28,pump:0.15,echo:0.12,width:0.52,drumsVol:0.82,masterVol:0.88,chordInst:"Rhodes",drums:"Reggae",prog:"Two Chord",chordRhythm:"offbeat",bassStyle:"root",structureOn:true},
+reggae_dub:{bpm:70,key:"G",scale:"dorian",swing:0.1,humanize:0.25,melody:0.25,filter:4500,reverb:0.55,pump:0.2,echo:0.4,width:0.62,drumsVol:0.72,masterVol:0.85,chordInst:"Pad",drums:"Reggae",prog:"Lofi Classic",chordRhythm:"offbeat",bassStyle:"fifth",structureOn:true},
+reggae_roots:{bpm:74,key:"C",scale:"majorPent",swing:0.14,humanize:0.2,melody:0.32,filter:5800,reverb:0.32,pump:0.12,echo:0.18,width:0.5,drumsVol:0.8,masterVol:0.88,chordInst:"EP",drums:"Reggae",prog:"Hopeful",chordRhythm:"offbeat",bassStyle:"root",structureOn:true},
 // Drum & Bass
 dnb_liquid:{bpm:174,key:"F#",scale:"dorian",swing:0.1,humanize:0.15,melody:0.35,filter:6000,reverb:0.4,pump:0.45,echo:0.2,width:0.55,drumsVol:0.88,masterVol:0.9,chordInst:"Pad",drums:"DnB",prog:"Hopeful",chordRhythm:"stabs",bassStyle:"bounce",structureOn:true},
 dnb_neuro:{bpm:172,key:"C",scale:"naturalMin",swing:0.05,humanize:0.12,melody:0.2,filter:3500,reverb:0.3,pump:0.65,echo:0.15,width:0.45,drumsVol:0.95,masterVol:0.9,chordInst:"Pluck",drums:"DnB",prog:"Borrowed Dark",chordRhythm:"half",bassStyle:"sparse",structureOn:true},
@@ -79,7 +80,7 @@ const PRESET_LABELS={
   chill:"Chill Study",rainy:"Rainy Jazz",dusty:"Dusty Boom Bap",night:"Late Night",dreamy:"Dreamy",neo:"Neo Soul",piano:"Sleepy Piano",clean:"Clean Studio",dilla:"Dilla Swing",cafe:"Cozy Cafe",focus:"Focus Flow",midnight:"Midnight",triphop:"Trip Hop",sunday:"Sunday Morning",velvet:"Velvet Keys",jazzlounge:"Jazz Lounge",
   hh_boom:"Boom Bap Classic",hh_classic:"90s Hip Hop",
   trap_dark:"Dark Trap",trap_melodic:"Melodic Trap",
-  reggae_one:"Reggae One Drop",reggae_dub:"Dub Steppers",
+  reggae_one:"Reggae One Drop",reggae_dub:"Dub Steppers",reggae_roots:"Roots Rock Reggae",
   dnb_liquid:"Liquid DnB",dnb_neuro:"Neurofunk",
   jazz_swing:"Jazz Swing",jazz_ballad:"Jazz Ballad",
   classical_piano:"Classical Piano",cinematic:"Cinematic Score",
@@ -91,7 +92,7 @@ const PRESET_LABELS={
 const GENRE_PRESETS={
   lofi:["chill","rainy","dusty","night","dreamy","neo","piano","clean","dilla","cafe","focus","midnight","triphop","sunday","velvet","jazzlounge"],
   hiphop:["hh_boom","hh_classic","dusty","dilla","velvet"],
-  reggae:["reggae_one","reggae_dub"],
+  reggae:["reggae_one","reggae_roots","reggae_dub"],
   dnb:["dnb_liquid","dnb_neuro"],
   jazz:["jazz_swing","jazz_ballad","jazzlounge","rainy"],
   classical:["classical_piano","cinematic","piano"]
@@ -462,18 +463,28 @@ function chordTone(t,freq,type,gain,dur,pan,p){
     return;
   }
   if(genre==="reggae"){
-    // Skanky, bright organ / guitar-like stabs
-    const o=ctx.createOscillator(),gn=ctx.createGain(),f=ctx.createBiquadFilter();
-    o.type="square";o.frequency.value=freq;
-    f.type="lowpass";f.frequency.value=2200;
-    gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(gain*0.7,t+0.01);
-    gn.gain.exponentialRampToValueAtTime(0.001,t+Math.min(dur,0.35));
-    o.connect(f);f.connect(gn);merge(gn);o.start(t);o.stop(t+0.4);
-    const o2=ctx.createOscillator(),g2=ctx.createGain();
-    o2.type="sawtooth";o2.frequency.value=freq*1.5;o2.detune.value=8;
-    g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(gain*0.25,t+0.01);
-    g2.gain.exponentialRampToValueAtTime(0.001,t+0.25);
-    o2.connect(g2);merge(g2);o2.start(t);o2.stop(t+0.3);
+    // Classic reggae organ skank (Hammond-style drawbars + short offbeat chop — Marley / Wailers feel)
+    const f=ctx.createBiquadFilter();f.type="lowpass";f.frequency.value=2800;
+    // Drawbar-ish partials: 8' 4' 2-2/3' 2'
+    const partials=[[1,0.55],[2,0.35],[3,0.18],[4,0.12],[6,0.08]];
+    partials.forEach(([mul,amp],i)=>{
+      const o=ctx.createOscillator(),gn=ctx.createGain();
+      o.type=i<2?"sine":"triangle";
+      o.frequency.value=freq*mul;
+      o.detune.value=(i-2)*3;
+      gn.gain.setValueAtTime(0,t);
+      gn.gain.linearRampToValueAtTime(gain*amp,t+0.008);
+      // Short staccato skank — chops off quickly like reggae organ
+      gn.gain.exponentialRampToValueAtTime(0.001,t+Math.min(dur*0.45,0.22));
+      o.connect(f);f.connect(gn);merge(gn);
+      o.start(t);o.stop(t+0.35);
+    });
+    // Soft guitar-ish click on top of skank
+    const gtr=ctx.createOscillator(),gg=ctx.createGain();
+    gtr.type="sawtooth";gtr.frequency.value=freq*2;
+    gg.gain.setValueAtTime(0,t);gg.gain.linearRampToValueAtTime(gain*0.12,t+0.004);
+    gg.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+    gtr.connect(gg);merge(gg);gtr.start(t);gtr.stop(t+0.12);
     return;
   }
   if(genre==="dnb"){
@@ -1042,18 +1053,34 @@ $("journeyEvery")?.addEventListener("change",()=>{if(isPlaying)setupJourney()});
 
 document.querySelectorAll(".mood").forEach(chip=>chip.addEventListener("click",()=>{document.querySelectorAll(".mood").forEach(c=>c.classList.remove("active"));chip.classList.add("active")}));
 document.querySelectorAll(".chip.genre").forEach(chip=>chip.addEventListener("click",()=>setGenre(chip.dataset.genre)));
-document.querySelectorAll(".viz-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".viz-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");vizMode=tab.dataset.mode}));
+$("vizModeSelect")?.addEventListener("change",e=>{vizMode=e.target.value});
 $("radioBtn")?.addEventListener("click",toggleRadio);
 $("vizColor")?.addEventListener("input",()=>{});
 $("accentColor")?.addEventListener("input",e=>{
   document.documentElement.style.setProperty("--accent",e.target.value);
   try{localStorage.setItem("lofi_accent",e.target.value)}catch(err){}
 });
+function applyBgPattern(){
+  const v=$("bgPattern")?.value||"dots";
+  document.body.classList.remove("bg-dots","bg-grid","bg-noise","bg-waves");
+  if(v&&v!=="none") document.body.classList.add("bg-"+v);
+  try{localStorage.setItem("lofi_bgPattern",v)}catch(err){}
+}
+function applyLayoutMode(){
+  const v=$("layoutMode")?.value||"auto";
+  document.body.classList.remove("layout-mobile","layout-desktop");
+  if(v==="mobile") document.body.classList.add("layout-mobile");
+  if(v==="desktop") document.body.classList.add("layout-desktop");
+  try{localStorage.setItem("lofi_layout",v)}catch(err){}
+}
+$("bgPattern")?.addEventListener("change",applyBgPattern);
+$("layoutMode")?.addEventListener("change",applyLayoutMode);
 $("bgColor")?.addEventListener("input",e=>{
   document.documentElement.style.setProperty("--bg",e.target.value);
-  document.body.style.background=e.target.value;
+  document.body.style.backgroundColor=e.target.value;
   try{localStorage.setItem("lofi_bg",e.target.value)}catch(err){}
 });
+
 ["bpm","swing","humanize","melody","filter","reverb","room","damp","pump","echo","width","drumsVol","masterVol","eqLow","eqMid","eqHigh","ambient","crackle","hiss","rainAmt","rainWidth","kickDecay","kickClick","snareTone","ghost","transpose","inversion","introBars","grooveBars"].forEach(id=>{if($(id))$(id).addEventListener("input",()=>{updateLabels();saveSettings()})});
 document.addEventListener("keydown",e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
   if(e.code==="Space"){e.preventDefault();isPlaying?stop():start()}
@@ -1547,6 +1574,11 @@ initAtmosMutes();
 try{
   const ac=localStorage.getItem("lofi_accent");
   const bg=localStorage.getItem("lofi_bg");
+  const bp=localStorage.getItem("lofi_bgPattern");
+  const lm=localStorage.getItem("lofi_layout");
   if(ac){document.documentElement.style.setProperty("--accent",ac);if($("accentColor"))$("accentColor").value=ac;if($("vizColor"))$("vizColor").value=ac}
-  if(bg){document.documentElement.style.setProperty("--bg",bg);document.body.style.background=bg;if($("bgColor"))$("bgColor").value=bg}
-}catch(e){}
+  if(bg){document.documentElement.style.setProperty("--bg",bg);document.body.style.backgroundColor=bg;if($("bgColor"))$("bgColor").value=bg}
+  if(bp&&$("bgPattern")){$("bgPattern").value=bp}
+  if(lm&&$("layoutMode")){$("layoutMode").value=lm}
+  applyBgPattern();applyLayoutMode();
+}catch(e){try{applyBgPattern()}catch(e2){}}
