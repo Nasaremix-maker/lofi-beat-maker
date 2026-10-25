@@ -1,10 +1,16 @@
-# Lofi Beat Maker Pro — NasaRemix Studios Edition
+# Beat Maker Pro — NasaRemix Studios Edition
 
-A free, browser-based lofi beat studio. Generate chill beats with procedural synthesis, tweak dozens of controls, **play live on a beat pad**, sequence patterns, and export WAV stems — no account, no install required (optional PWA).
+A free, browser-based **multi-genre** beat studio. Switch between Lofi, Hip Hop, Trap, Reggae, Drum & Bass, Jazz, Classical, House, R&B, Ambient, and Afrobeat. Procedural synthesis, live beat pad, 16-step sequencer, and full stem export — no account, no install required (optional PWA).
 
 ---
 
 ## Features
+
+### Multi-Genre Engine (NEW)
+- One-click genre switcher: **Lofi · Hip Hop · Trap · Reggae · DnB · Jazz · Classical · House · R&B · Ambient · Afrobeat**
+- Genre-specific presets, drum patterns, BPM ranges, instruments and FX bias
+- Title and status update to match the selected style
+- Randomize respects the current genre
 
 ### Sound engine
 - Procedural drums (kick, snare, hats) with velocity, ghost notes, and optional **custom samples**

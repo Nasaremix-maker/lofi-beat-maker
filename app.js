@@ -43,12 +43,86 @@ midnight:{bpm:72,key:"D",scale:"dorian",swing:0.2,humanize:0.35,melody:0.4,filte
 triphop:{bpm:70,key:"F#",scale:"naturalMin",swing:0.18,humanize:0.4,melody:0.3,filter:4000,reverb:0.45,pump:0.4,echo:0.22,width:0.5,drumsVol:0.75,masterVol:0.85,chordInst:"Pad",drums:"TripHop",prog:"Minor Drift",chordRhythm:"half",bassStyle:"sparse",vinylOn:true,structureOn:true},
 sunday:{bpm:70,key:"G",scale:"majorPent",swing:0.15,humanize:0.25,melody:0.5,filter:7500,reverb:0.35,pump:0.2,echo:0.15,width:0.45,drumsVol:0.55,masterVol:0.85,chordInst:"Pluck",drums:"Sparse",prog:"Hopeful",chordRhythm:"half",bassStyle:"sparse",vinylOn:true,structureOn:true},
 velvet:{bpm:68,key:"C#",scale:"dorian",swing:0.3,humanize:0.4,melody:0.4,filter:5400,reverb:0.45,pump:0.42,echo:0.2,width:0.5,drumsVol:0.78,masterVol:0.85,chordInst:"Rhodes",drums:"BoomBap",prog:"Neo Soul",chordRhythm:"arp",bassStyle:"walk",vinylOn:true,structureOn:true},
-jazzlounge:{bpm:86,key:"A#",scale:"mixo",swing:0.34,humanize:0.4,melody:0.45,filter:6800,reverb:0.4,pump:0.15,echo:0.18,width:0.55,drumsVol:0.7,masterVol:0.85,chordInst:"Piano",drums:"Jazzy",prog:"Jazz ii-V-I",chordRhythm:"offbeat",bassStyle:"walk",structureOn:true}
+jazzlounge:{bpm:86,key:"A#",scale:"mixo",swing:0.34,humanize:0.4,melody:0.45,filter:6800,reverb:0.4,pump:0.15,echo:0.18,width:0.55,drumsVol:0.7,masterVol:0.85,chordInst:"Piano",drums:"Jazzy",prog:"Jazz ii-V-I",chordRhythm:"offbeat",bassStyle:"walk",structureOn:true},
+// Hip Hop
+hh_boom:{bpm:92,key:"C",scale:"minorPent",swing:0.28,humanize:0.4,melody:0.25,filter:4500,reverb:0.25,pump:0.55,echo:0.12,width:0.4,drumsVol:0.9,masterVol:0.88,chordInst:"Rhodes",drums:"BoomBap",prog:"Dusty Boom Bap",chordRhythm:"stabs",bassStyle:"bounce",vinylOn:true,structureOn:true,crackle:0.4},
+hh_classic:{bpm:96,key:"F",scale:"minorPent",swing:0.22,humanize:0.35,melody:0.3,filter:5000,reverb:0.3,pump:0.5,echo:0.1,width:0.42,drumsVol:0.88,masterVol:0.88,chordInst:"EP",drums:"HeadNod",prog:"Study Session",chordRhythm:"stabs",bassStyle:"root",vinylOn:true,structureOn:true},
+// Trap
+trap_dark:{bpm:140,key:"A#",scale:"naturalMin",swing:0.08,humanize:0.2,melody:0.22,filter:3800,reverb:0.35,pump:0.6,echo:0.2,width:0.5,drumsVol:0.92,masterVol:0.9,chordInst:"Pad",drums:"Trap",prog:"Borrowed Dark",chordRhythm:"half",bassStyle:"sparse",structureOn:true},
+trap_melodic:{bpm:145,key:"D",scale:"minorPent",swing:0.06,humanize:0.18,melody:0.4,filter:5200,reverb:0.4,pump:0.55,echo:0.25,width:0.55,drumsVol:0.85,masterVol:0.88,chordInst:"Bell",drums:"Trap",prog:"Minor Drift",chordRhythm:"stabs",bassStyle:"fifth",structureOn:true},
+// Reggae
+reggae_one:{bpm:78,key:"A",scale:"majorPent",swing:0.15,humanize:0.25,melody:0.35,filter:6200,reverb:0.3,pump:0.2,echo:0.15,width:0.5,drumsVol:0.8,masterVol:0.85,chordInst:"Rhodes",drums:"Reggae",prog:"Two Chord",chordRhythm:"offbeat",bassStyle:"root",structureOn:true},
+reggae_dub:{bpm:72,key:"G",scale:"dorian",swing:0.12,humanize:0.3,melody:0.28,filter:4800,reverb:0.55,pump:0.25,echo:0.35,width:0.6,drumsVol:0.75,masterVol:0.85,chordInst:"Pad",drums:"Reggae",prog:"Lofi Classic",chordRhythm:"half",bassStyle:"fifth",structureOn:true},
+// Drum & Bass
+dnb_liquid:{bpm:174,key:"F#",scale:"dorian",swing:0.1,humanize:0.15,melody:0.35,filter:6000,reverb:0.4,pump:0.45,echo:0.2,width:0.55,drumsVol:0.88,masterVol:0.9,chordInst:"Pad",drums:"DnB",prog:"Hopeful",chordRhythm:"stabs",bassStyle:"bounce",structureOn:true},
+dnb_neuro:{bpm:172,key:"C",scale:"naturalMin",swing:0.05,humanize:0.12,melody:0.2,filter:3500,reverb:0.3,pump:0.65,echo:0.15,width:0.45,drumsVol:0.95,masterVol:0.9,chordInst:"Pluck",drums:"DnB",prog:"Borrowed Dark",chordRhythm:"half",bassStyle:"sparse",structureOn:true},
+// Jazz
+jazz_swing:{bpm:120,key:"A#",scale:"mixo",swing:0.38,humanize:0.45,melody:0.5,filter:7000,reverb:0.35,pump:0.1,echo:0.12,width:0.55,drumsVol:0.7,masterVol:0.85,chordInst:"Piano",drums:"Jazzy",prog:"Jazz ii-V-I",chordRhythm:"offbeat",bassStyle:"walk",structureOn:true},
+jazz_ballad:{bpm:68,key:"D#",scale:"dorian",swing:0.2,humanize:0.3,melody:0.45,filter:5500,reverb:0.5,pump:0.15,echo:0.18,width:0.5,drumsVol:0.5,masterVol:0.85,chordInst:"Piano",drums:"Sparse",prog:"Sad Piano",chordRhythm:"whole",bassStyle:"root",structureOn:true},
+// Classical / Cinematic
+classical_piano:{bpm:72,key:"C",scale:"major",swing:0.05,humanize:0.15,melody:0.6,filter:8000,reverb:0.55,pump:0.05,echo:0.1,width:0.4,drumsVol:0.15,masterVol:0.85,chordInst:"Piano",drums:"Classical",prog:"Hopeful",chordRhythm:"whole",bassStyle:"root",structureOn:true,ambient:0.2},
+cinematic:{bpm:80,key:"D",scale:"naturalMin",swing:0.08,humanize:0.2,melody:0.5,filter:4500,reverb:0.65,pump:0.15,echo:0.25,width:0.65,drumsVol:0.4,masterVol:0.85,chordInst:"Pad",drums:"Sparse",prog:"Minor Drift",chordRhythm:"whole",bassStyle:"fifth",structureOn:true,ambient:0.35},
+// House
+house_deep:{bpm:122,key:"A",scale:"minorPent",swing:0.1,humanize:0.15,melody:0.3,filter:5500,reverb:0.35,pump:0.4,echo:0.18,width:0.5,drumsVol:0.85,masterVol:0.88,chordInst:"Rhodes",drums:"House",prog:"Two Chord",chordRhythm:"stabs",bassStyle:"bounce",structureOn:true},
+house_classic:{bpm:125,key:"F",scale:"majorPent",swing:0.08,humanize:0.12,melody:0.25,filter:6500,reverb:0.3,pump:0.35,echo:0.15,width:0.48,drumsVol:0.88,masterVol:0.88,chordInst:"EP",drums:"FourFloor",prog:"Lofi Classic",chordRhythm:"offbeat",bassStyle:"root",structureOn:true},
+// R&B
+rnb_smooth:{bpm:88,key:"A#",scale:"dorian",swing:0.25,humanize:0.35,melody:0.4,filter:5800,reverb:0.4,pump:0.35,echo:0.2,width:0.5,drumsVol:0.78,masterVol:0.85,chordInst:"Rhodes",drums:"HeadNod",prog:"Neo Soul",chordRhythm:"offbeat",bassStyle:"bounce",structureOn:true},
+rnb_quiet:{bpm:74,key:"F#",scale:"majorPent",swing:0.18,humanize:0.3,melody:0.45,filter:5200,reverb:0.45,pump:0.28,echo:0.22,width:0.52,drumsVol:0.65,masterVol:0.85,chordInst:"Pad",drums:"Mellow",prog:"Late Night",chordRhythm:"half",bassStyle:"fifth",structureOn:true},
+// Ambient
+ambient_drift:{bpm:60,key:"E",scale:"dorian",swing:0.05,humanize:0.15,melody:0.25,filter:3200,reverb:0.7,pump:0.1,echo:0.35,width:0.7,drumsVol:0.25,masterVol:0.8,chordInst:"Pad",drums:"Ambient",prog:"Dreamy Float",chordRhythm:"whole",bassStyle:"sparse",structureOn:true,ambient:0.5},
+ambient_space:{bpm:55,key:"C#",scale:"majorPent",swing:0.04,humanize:0.1,melody:0.2,filter:2800,reverb:0.75,pump:0.05,echo:0.4,width:0.75,drumsVol:0.15,masterVol:0.78,chordInst:"Bell",drums:"None",prog:"Hopeful",chordRhythm:"whole",bassStyle:"root",structureOn:false,ambient:0.6},
+// Afrobeat
+afro_groove:{bpm:108,key:"G",scale:"majorPent",swing:0.12,humanize:0.25,melody:0.35,filter:6000,reverb:0.3,pump:0.3,echo:0.15,width:0.5,drumsVol:0.85,masterVol:0.88,chordInst:"Rhodes",drums:"Afro",prog:"Two Chord",chordRhythm:"stabs",bassStyle:"bounce",structureOn:true},
+afro_highlife:{bpm:115,key:"C",scale:"major",swing:0.1,humanize:0.22,melody:0.4,filter:6800,reverb:0.28,pump:0.25,echo:0.12,width:0.48,drumsVol:0.82,masterVol:0.88,chordInst:"Pluck",drums:"Afro",prog:"Hopeful",chordRhythm:"offbeat",bassStyle:"walk",structureOn:true}
 };
-const PRESET_LABELS={chill:"Chill Study",rainy:"Rainy Jazz",dusty:"Dusty Boom Bap",night:"Late Night",dreamy:"Dreamy",neo:"Neo Soul",piano:"Sleepy Piano",clean:"Clean Studio",dilla:"Dilla Swing",cafe:"Cozy Cafe",focus:"Focus Flow",midnight:"Midnight",triphop:"Trip Hop",sunday:"Sunday Morning",velvet:"Velvet Keys",jazzlounge:"Jazz Lounge"};
+const PRESET_LABELS={
+  chill:"Chill Study",rainy:"Rainy Jazz",dusty:"Dusty Boom Bap",night:"Late Night",dreamy:"Dreamy",neo:"Neo Soul",piano:"Sleepy Piano",clean:"Clean Studio",dilla:"Dilla Swing",cafe:"Cozy Cafe",focus:"Focus Flow",midnight:"Midnight",triphop:"Trip Hop",sunday:"Sunday Morning",velvet:"Velvet Keys",jazzlounge:"Jazz Lounge",
+  hh_boom:"Boom Bap Classic",hh_classic:"90s Hip Hop",
+  trap_dark:"Dark Trap",trap_melodic:"Melodic Trap",
+  reggae_one:"Reggae One Drop",reggae_dub:"Dub Steppers",
+  dnb_liquid:"Liquid DnB",dnb_neuro:"Neurofunk",
+  jazz_swing:"Jazz Swing",jazz_ballad:"Jazz Ballad",
+  classical_piano:"Classical Piano",cinematic:"Cinematic Score",
+  house_deep:"Deep House",house_classic:"Classic House",
+  rnb_smooth:"Smooth R&B",rnb_quiet:"Quiet Storm",
+  ambient_drift:"Ambient Drift",ambient_space:"Space Ambient",
+  afro_groove:"Afro Groove",afro_highlife:"Highlife"
+};
+const GENRE_PRESETS={
+  lofi:["chill","rainy","dusty","night","dreamy","neo","piano","clean","dilla","cafe","focus","midnight","triphop","sunday","velvet","jazzlounge"],
+  hiphop:["hh_boom","hh_classic","dusty","dilla","velvet"],
+  trap:["trap_dark","trap_melodic"],
+  reggae:["reggae_one","reggae_dub"],
+  dnb:["dnb_liquid","dnb_neuro"],
+  jazz:["jazz_swing","jazz_ballad","jazzlounge","rainy"],
+  classical:["classical_piano","cinematic","piano"],
+  house:["house_deep","house_classic"],
+  rnb:["rnb_smooth","rnb_quiet","neo","velvet"],
+  ambient:["ambient_drift","ambient_space","dreamy","sunday"],
+  afro:["afro_groove","afro_highlife"]
+};
+let currentGenre="lofi";
 const MOODS={Any:[],Calm:["dreamy","piano","sunday","focus","clean"],Rainy:["rainy","piano","triphop","night"],Jazzy:["jazzlounge","cafe","rainy","neo"],Upbeat:["dusty","dilla","cafe","neo"],Dark:["triphop","night","velvet","piano"],Dreamy:["dreamy","midnight","night","sunday"]};
 const COMMUNITY=[{name:"Rain Study Pack",preset:"rainy",note:"Community"},{name:"Night Drive Soft",preset:"night",note:"Community"},{name:"Focus Clean",preset:"focus",note:"Community"},{name:"Velvet Evening",preset:"velvet",note:"Community"}];
-const DRUM_PATS={Mellow:{k:[0,8],s:[4,12],h:[0,2,4,6,8,10,12,14],o:[]},BoomBap:{k:[0,7,10],s:[4,12],h:[0,2,4,6,8,10,12,14],o:[]},HeadNod:{k:[0,6,10],s:[4,12],h:[0,2,3,4,6,8,10,12,14],o:[]},Sparse:{k:[0,8],s:[12],h:[4,12],o:[]},Jazzy:{k:[0,7],s:[4,12],h:[0,2,3,4,6,7,8,10,12,14],o:[14]},Dilla:{k:[0,7,9],s:[4,12,13],h:[0,2,3,5,6,8,10,11,12,14],o:[]},TripHop:{k:[0,9],s:[8],h:[2,6,10,14],o:[]},FourFloor:{k:[0,4,8,12],s:[4,12],h:[2,6,10,14],o:[]},None:{k:[],s:[],h:[],o:[]}};
+const DRUM_PATS={
+  Mellow:{k:[0,8],s:[4,12],h:[0,2,4,6,8,10,12,14],o:[]},
+  BoomBap:{k:[0,7,10],s:[4,12],h:[0,2,4,6,8,10,12,14],o:[]},
+  HeadNod:{k:[0,6,10],s:[4,12],h:[0,2,3,4,6,8,10,12,14],o:[]},
+  Sparse:{k:[0,8],s:[12],h:[4,12],o:[]},
+  Jazzy:{k:[0,7],s:[4,12],h:[0,2,3,4,6,7,8,10,12,14],o:[14]},
+  Dilla:{k:[0,7,9],s:[4,12,13],h:[0,2,3,5,6,8,10,11,12,14],o:[]},
+  TripHop:{k:[0,9],s:[8],h:[2,6,10,14],o:[]},
+  FourFloor:{k:[0,4,8,12],s:[4,12],h:[2,6,10,14],o:[]},
+  // New genre patterns
+  Trap:{k:[0,7,10,14],s:[4,12],h:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],o:[]},
+  Reggae:{k:[0,8],s:[4,12],h:[2,6,10,14],o:[6,14]},
+  DnB:{k:[0,6,10],s:[4,12],h:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],o:[]},
+  House:{k:[0,4,8,12],s:[4,12],h:[0,2,4,6,8,10,12,14],o:[]},
+  Afro:{k:[0,3,6,8,11],s:[4,12],h:[0,2,4,6,8,10,12,14],o:[7]},
+  Classical:{k:[],s:[],h:[],o:[]},
+  Ambient:{k:[0],s:[],h:[8],o:[]},
+  None:{k:[],s:[],h:[],o:[]}
+};
 const SCENE_NAMES=["Rainy Intro","Soft Build","Focus Peak","Side Quest","Deep Groove","Cloud Break","Warm Middle","Night Drift","Gentle Lift","Wind Down"];
 
 function $(id){return document.getElementById(id)}
@@ -396,7 +470,21 @@ function saveSettings(){try{localStorage.setItem("lofi_web_settings",JSON.string
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem("lofi_web_settings")||"null");if(!s)return false;applyPreset(s.preset||"chill",{...(PRESETS[s.preset]||{}),...s},true);return true}catch(e){return false}}
 function shareLink(){const raw=JSON.stringify(collectSettings());const hash=btoa(unescape(encodeURIComponent(raw))).replace(/=+$/,"").slice(0,180);const url=location.origin+location.pathname+"#p="+hash;navigator.clipboard.writeText(url).then(()=>$("status").textContent="Short share link copied").catch(()=>prompt("Copy:",url))}
 function loadFromHash(){if(!location.hash.includes("p="))return false;try{const h=location.hash.split("p=")[1];const s=JSON.parse(decodeURIComponent(escape(atob(h))));applyPreset(s.preset||"chill",{...(PRESETS[s.preset]||{}),...s},true);return true}catch(e){return false}}
-function randomize(){pushUndo();const mood=[...document.querySelectorAll(".mood.active")].map(c=>c.dataset.mood)[0]||"Any";const pool=MOODS[mood]?.length?MOODS[mood]:Object.keys(PRESETS);const name=pool[Math.floor(Math.random()*pool.length)];applyPreset(name);const inten=$("randIntensity").value;const amt=inten==="subtle"?3:inten==="chaotic"?12:6;$("bpm").value=Math.min(110,Math.max(55,+$("bpm").value+Math.floor(Math.random()*amt)-amt/2));$("swing").value=Math.min(0.42,Math.max(0,+$("swing").value+(Math.random()-0.5)*(amt*0.01)));$("filter").value=Math.min(12000,Math.max(1800,+$("filter").value+Math.floor(Math.random()*amt*80)-amt*40));setSeed(String(Math.floor(Math.random()*999999)+1));updateLabels();saveSettings()}
+function randomize(){
+  pushUndo();
+  const genrePool = GENRE_PRESETS[currentGenre] || Object.keys(PRESETS);
+  const name = genrePool[Math.floor(Math.random()*genrePool.length)];
+  applyPreset(name);
+  const inten=$("randIntensity").value;
+  const amt=inten==="subtle"?3:inten==="chaotic"?12:6;
+  const bpmMax = currentGenre==="dnb"?180:currentGenre==="trap"||currentGenre==="house"?150:120;
+  const bpmMin = currentGenre==="ambient"?50:currentGenre==="classical"?60:55;
+  $("bpm").value=Math.min(bpmMax,Math.max(bpmMin,+$("bpm").value+Math.floor(Math.random()*amt*2)-amt));
+  $("swing").value=Math.min(0.42,Math.max(0,+$("swing").value+(Math.random()-0.5)*(amt*0.01)));
+  $("filter").value=Math.min(12000,Math.max(1800,+$("filter").value+Math.floor(Math.random()*amt*80)-amt*40));
+  setSeed(String(Math.floor(Math.random()*999999)+1));
+  updateLabels();saveSettings();
+}
 function similarPreset(){const cur=currentPresetName;const keys=Object.keys(PRESETS);const idx=keys.indexOf(cur);const next=keys[(idx+1)%keys.length];applyPreset(next);$("status").textContent="Similar → "+(PRESET_LABELS[next]||next)}
 function dailySeed(){const d=new Date();const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();setSeed(String(seed));const keys=Object.keys(PRESETS);applyPreset(keys[seed%keys.length]);$("status").textContent="Daily seed "+seed}
 function tapTempo(){const now=performance.now();tapTimes.push(now);tapTimes=tapTimes.filter(t=>now-t<3000);if(tapTimes.length>=2){let sum=0;for(let i=1;i<tapTimes.length;i++)sum+=tapTimes[i]-tapTimes[i-1];const avg=sum/(tapTimes.length-1);const bpm=Math.round(60000/avg);const conf=Math.min(100,tapTimes.length*20);$("tapInfo").classList.remove("hidden");$("tapInfo").textContent=`${bpm} BPM · confidence ${conf}%`;if(bpm>=55&&bpm<=110){$("bpm").value=bpm;updateLabels();saveSettings()}}}
@@ -404,7 +492,34 @@ function tapTempo(){const now=performance.now();tapTimes.push(now);tapTimes=tapT
 const THEMES=[{accent:"#7c9cff",accent2:"#a78bfa"},{accent:"#5eead4",accent2:"#2dd4bf"},{accent:"#f472b6",accent2:"#e879f9"},{accent:"#fbbf24",accent2:"#f59e0b"},{accent:"#a3e635",accent2:"#84cc16"}];let themeIdx=0;
 function cycleTheme(){themeIdx=(themeIdx+1)%THEMES.length;const t=THEMES[themeIdx];document.documentElement.style.setProperty("--accent",t.accent);document.documentElement.style.setProperty("--accent-2",t.accent2);try{localStorage.setItem("lofi_theme",themeIdx)}catch(e){}}
 
-function buildPresetChips(){const grid=$("presetGrid");if(!grid)return;grid.innerHTML="";Object.keys(PRESETS).forEach(k=>{const b=document.createElement("button");b.className="chip"+(k===currentPresetName?" active":"");b.dataset.p=k;b.textContent=PRESET_LABELS[k]||k;b.addEventListener("click",()=>{applyPreset(k);if(playlist.length||true){/* allow add with shift */}if(window.event&&window.event.shiftKey){playlist.push(k);renderPlaylist()}});grid.appendChild(b)})}
+function buildPresetChips(){
+  const grid=$("presetGrid");if(!grid)return;grid.innerHTML="";
+  const keys = (GENRE_PRESETS[currentGenre]||Object.keys(PRESETS)).filter(k=>PRESETS[k]);
+  keys.forEach(k=>{
+    const b=document.createElement("button");
+    b.className="chip"+(k===currentPresetName?" active":"");
+    b.dataset.p=k;
+    b.textContent=PRESET_LABELS[k]||k;
+    b.addEventListener("click",()=>{
+      applyPreset(k);
+      if(window.event&&window.event.shiftKey){playlist.push(k);renderPlaylist()}
+    });
+    grid.appendChild(b);
+  });
+}
+function setGenre(g){
+  currentGenre=g;
+  document.querySelectorAll(".chip.genre").forEach(c=>c.classList.toggle("active",c.dataset.genre===g));
+  // Apply first preset of the genre for instant feel change
+  const list=GENRE_PRESETS[g]||[];
+  if(list.length) applyPreset(list[0]);
+  buildPresetChips();
+  // Update page title feel
+  const titles={lofi:"Lofi",hiphop:"Hip Hop",trap:"Trap",reggae:"Reggae",dnb:"Drum & Bass",jazz:"Jazz",classical:"Classical",house:"House",rnb:"R&B",ambient:"Ambient",afro:"Afrobeat"};
+  $("status").textContent = (titles[g]||g) + " mode";
+  const h1=document.querySelector(".brand h1");
+  if(h1) h1.textContent = (titles[g]||"Lofi") + " Beat Maker";
+}
 function filterPresets(){const q=($("presetSearch")?.value||"").toLowerCase();document.querySelectorAll("#presetGrid .chip").forEach(c=>{const id=c.dataset.p;const label=(PRESET_LABELS[id]||id).toLowerCase();c.style.display=!q||label.includes(q)||id.includes(q)?"":"none"})}
 function buildProgSelect(){const sel=$("prog");if(!sel)return;sel.innerHTML="";Object.keys(PROG_LIST).forEach(n=>{const o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)})}
 function buildPiano(){const el=$("piano");if(!el)return;el.innerHTML="";const scale=SCALES[$("scale")?.value]||SCALES.minorPent;const root=KEYS.indexOf($("key")?.value||"A");for(let i=0;i<12;i++){const btn=document.createElement("button");btn.type="button";btn.className="pkey"+(scale.includes(i)?" in-scale":"");btn.textContent=KEYS[(root+i)%12];btn.addEventListener("click",()=>{unlockAudio().then(()=>{const f=(NOTE[$("key").value]||440)*Math.pow(2,i/12);melodyNote(ctx.currentTime,f*2,0.25)})});el.appendChild(btn)}}
@@ -458,6 +573,7 @@ $("key")?.addEventListener("change",buildPiano);$("scale")?.addEventListener("ch
 $("journeyEvery")?.addEventListener("change",()=>{if(isPlaying)setupJourney()});
 
 document.querySelectorAll(".mood").forEach(chip=>chip.addEventListener("click",()=>{document.querySelectorAll(".mood").forEach(c=>c.classList.remove("active"));chip.classList.add("active")}));
+document.querySelectorAll(".chip.genre").forEach(chip=>chip.addEventListener("click",()=>setGenre(chip.dataset.genre)));
 document.querySelectorAll(".viz-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".viz-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");vizMode=tab.dataset.mode}));
 ["bpm","swing","humanize","melody","filter","reverb","room","damp","pump","echo","width","drumsVol","masterVol","eqLow","eqMid","eqHigh","ambient","crackle","hiss","rainAmt","rainWidth","kickDecay","kickClick","snareTone","ghost","transpose","inversion","introBars","grooveBars"].forEach(id=>{if($(id))$(id).addEventListener("input",()=>{updateLabels();saveSettings()})});
 document.addEventListener("keydown",e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;

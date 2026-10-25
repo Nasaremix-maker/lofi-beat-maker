@@ -92,9 +92,23 @@
     </section>
 
     <section class="card collapsible open">
-      <button class="card-head" type="button"><span class="card-title">Presets & Journey</span><span class="chev">▾</span></button>
+      <button class="card-head" type="button"><span class="card-title">Genre · Presets & Journey</span><span class="chev">▾</span></button>
       <div class="card-body">
-        <input type="search" id="presetSearch" class="select" placeholder="Search presets…" />
+        <div class="genre-label">Beat Style / Genre</div>
+        <div class="preset-row genre-row" id="genreGrid">
+          <button class="chip genre active" data-genre="lofi">Lofi</button>
+          <button class="chip genre" data-genre="hiphop">Hip Hop</button>
+          <button class="chip genre" data-genre="trap">Trap</button>
+          <button class="chip genre" data-genre="reggae">Reggae</button>
+          <button class="chip genre" data-genre="dnb">DnB</button>
+          <button class="chip genre" data-genre="jazz">Jazz</button>
+          <button class="chip genre" data-genre="classical">Classical</button>
+          <button class="chip genre" data-genre="house">House</button>
+          <button class="chip genre" data-genre="rnb">R&B</button>
+          <button class="chip genre" data-genre="ambient">Ambient</button>
+          <button class="chip genre" data-genre="afro">Afrobeat</button>
+        </div>
+        <input type="search" id="presetSearch" class="select" placeholder="Search presets…" style="margin-top:12px" />
         <div class="preset-row" id="moodGrid" style="margin-top:10px">
           <button class="chip mood active" data-mood="Any">Any</button>
           <button class="chip mood" data-mood="Calm">Calm</button>
@@ -137,7 +151,7 @@
       <button class="card-head" type="button"><span class="card-title">Groove</span><span class="chev">▾</span></button>
       <div class="card-body">
         <div class="grid-2">
-          <div class="field"><div class="field-top"><label>BPM</label><span id="bpmVal" class="mono">76</span></div><input type="range" id="bpm" min="55" max="110" value="76" /></div>
+          <div class="field"><div class="field-top"><label>BPM</label><span id="bpmVal" class="mono">76</span></div><input type="range" id="bpm" min="50" max="180" value="76" /></div>
           <div class="field"><div class="field-top"><label>Key</label></div>
             <select id="key" class="select"><option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option selected>A</option><option>A#</option><option>B</option></select>
           </div>
@@ -212,7 +226,11 @@
             <select id="drums" class="select">
               <option value="Mellow">Mellow</option><option value="BoomBap">Boom Bap</option><option value="HeadNod">Head Nod</option>
               <option value="Sparse">Sparse</option><option value="Jazzy">Jazzy</option><option value="Dilla">Dilla</option>
-              <option value="TripHop">Trip Hop</option><option value="FourFloor">Four Floor</option><option value="None">None</option>
+              <option value="TripHop">Trip Hop</option><option value="FourFloor">Four Floor</option>
+              <option value="Trap">Trap</option><option value="Reggae">Reggae</option><option value="DnB">Drum & Bass</option>
+              <option value="House">House</option><option value="Afro">Afrobeat</option>
+              <option value="Classical">Classical</option><option value="Ambient">Ambient</option>
+              <option value="None">None</option>
             </select>
           </div>
           <div class="field"><div class="field-top"><label>Drum vol</label><span id="drumsVal" class="mono">0.78</span></div><input type="range" id="drumsVol" min="0" max="1" step="0.01" value="0.78" /></div>
