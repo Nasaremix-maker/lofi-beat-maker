@@ -228,7 +228,7 @@ function schedulePump(t,amount,shape){if(amount<0.05)return;const now=Math.max(t
 
 function scheduleBar(p,t0){
   const spb=60/p.bpm,s16=spb/4,swing=p.swing,hum=p.humanize;
-  const sec=sectionForBar(barCount,p);const pat=DRUM_PATS[p.drums]||DRUM_PATS.Mellow;
+  const sec=sectionForBar(barCount,p);const pat=(typeof getActiveDrumPat==="function"?getActiveDrumPat():null)||DRUM_PATS[p.drums]||DRUM_PATS.Mellow;
   const dv=p.drumsVol*sec.drum;const when=i=>t0+i*s16+((i%2)?swing*s16:0)+humanOffset(hum,s16);
   if(audible("drums",p)){
     pat.k.forEach(i=>{kick(when(i),0.88*dv,p);schedulePump(when(i),p.pump,p.pumpShape)});
@@ -237,6 +237,14 @@ function scheduleBar(p,t0){
     else{pat.h.forEach(i=>{const ghost=p.ghost>0.05&&i%4!==0&&rng()<p.ghost;hat(when(i),0.18*dv,false,ghost?0.35:1)});pat.o.forEach(i=>hat(when(i),0.26*dv,true))}
     // ghost snares
     if(p.ghost>0.2&&rng()<p.ghost)snare(when(10)+s16*0.5,0.15*dv,p);
+    // Extra voices from sequencer (clap, rim, tom, perc)
+    if(typeof getActiveDrumPat==="function" && $("useSeqPattern")?.checked){
+      const full = seqPatterns[currentPat] || {};
+      (full.c||[]).forEach(i=>clap(when(i),0.55*dv));
+      (full.r||[]).forEach(i=>rim(when(i),0.5*dv));
+      (full.t||[]).forEach(i=>tom(when(i),0.55*dv,false));
+      (full.p||[]).forEach(i=>perc(when(i),0.4*dv));
+    }
   }
   let progName=p.prog;if(p.borrowed&&rng()>0.7)progName="Borrowed Dark";
   const prog=PROG_LIST[progName]||PROG_LIST["Study Session"];
@@ -461,7 +469,347 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredIns
 $("installBtn")?.addEventListener("click",async()=>{if(!deferredInstall)return;deferredInstall.prompt();deferredInstall=null;$("installBanner").classList.add("hidden")});
 $("installDismiss")?.addEventListener("click",()=>$("installBanner").classList.add("hidden"));
 
+// ========== BEAT PAD + SEQUENCER UPGRADE (NasaRemix Studios) ==========
+const PAD_DEFS = [
+  {id:"k", name:"Kick",  key:"1", cls:"kick"},
+  {id:"s", name:"Snare", key:"2", cls:"snare"},
+  {id:"h", name:"Hat",   key:"3", cls:"hat"},
+  {id:"o", name:"Open",  key:"4", cls:"open"},
+  {id:"c", name:"Clap",  key:"q", cls:"clap"},
+  {id:"r", name:"Rim",   key:"w", cls:"rim"},
+  {id:"t", name:"Tom",   key:"e", cls:"tom"},
+  {id:"p", name:"Perc",  key:"r", cls:"perc"},
+  {id:"k2",name:"Kick2", key:"a", cls:"kick"},
+  {id:"s2",name:"Snare2",key:"s", cls:"snare"},
+  {id:"h2",name:"Hat2",  key:"d", cls:"hat"},
+  {id:"fx",name:"FX",    key:"f", cls:"perc"},
+  {id:"c2",name:"Clap2", key:"z", cls:"clap"},
+  {id:"r2",name:"Rim2",  key:"x", cls:"rim"},
+  {id:"t2",name:"Tom2",  key:"c", cls:"tom"},
+  {id:"p2",name:"Shaker",key:"v", cls:"perc"}
+];
+
+let seqPatterns = { A: {k:[],s:[],h:[],o:[],c:[],r:[],t:[],p:[]}, B: {k:[],s:[],h:[],o:[],c:[],r:[],t:[],p:[]} };
+let currentPat = "A";
+let seqStep = 0;
+let padRecording = false;
+let metroOn = false;
+
+// Extra drum voices
+function clap(t, g) {
+  const n = ctx.createBufferSource(); n.buffer = noiseBuf(0.25);
+  const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 1800; bp.Q.value = 1.2;
+  const gn = ctx.createGain();
+  gn.gain.setValueAtTime(0, t);
+  gn.gain.linearRampToValueAtTime(g, t + 0.001);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+  // layered hits for clap character
+  n.connect(bp); bp.connect(gn); gn.connect(master);
+  n.start(t); n.stop(t + 0.22);
+  setTimeout(() => {}, 0); // keep structure
+  const n2 = ctx.createBufferSource(); n2.buffer = noiseBuf(0.15);
+  const bp2 = ctx.createBiquadFilter(); bp2.type = "bandpass"; bp2.frequency.value = 2200;
+  const g2 = ctx.createGain(); g2.gain.setValueAtTime(g * 0.7, t + 0.012); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+  n2.connect(bp2); bp2.connect(g2); g2.connect(master);
+  n2.start(t + 0.012); n2.stop(t + 0.16);
+}
+
+function rim(t, g) {
+  const o = ctx.createOscillator(), gn = ctx.createGain();
+  o.type = "triangle"; o.frequency.setValueAtTime(680, t); o.frequency.exponentialRampToValueAtTime(220, t + 0.06);
+  gn.gain.setValueAtTime(g * 0.9, t); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+  o.connect(gn); gn.connect(master); o.start(t); o.stop(t + 0.12);
+  const n = ctx.createBufferSource(); n.buffer = noiseBuf(0.04);
+  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 2500;
+  const ng = ctx.createGain(); ng.gain.setValueAtTime(g * 0.4, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+  n.connect(hp); hp.connect(ng); ng.connect(master); n.start(t); n.stop(t + 0.04);
+}
+
+function tom(t, g, high=false) {
+  const base = high ? 180 : 110;
+  const o = ctx.createOscillator(), gn = ctx.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(base * 1.8, t); o.frequency.exponentialRampToValueAtTime(base * 0.7, t + 0.18);
+  gn.gain.setValueAtTime(g, t); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+  o.connect(gn); gn.connect(master); o.start(t); o.stop(t + 0.32);
+}
+
+function perc(t, g) {
+  const n = ctx.createBufferSource(); n.buffer = noiseBuf(0.12);
+  const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 4200 + Math.random() * 1800; bp.Q.value = 4;
+  const gn = ctx.createGain(); gn.gain.setValueAtTime(g * 0.7, t); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+  n.connect(bp); bp.connect(gn); gn.connect(master); n.start(t); n.stop(t + 0.11);
+}
+
+function shaker(t, g) {
+  const n = ctx.createBufferSource(); n.buffer = noiseBuf(0.08);
+  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 7000;
+  const gn = ctx.createGain(); gn.gain.setValueAtTime(g * 0.45, t); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  n.connect(hp); hp.connect(gn); gn.connect(master); n.start(t); n.stop(t + 0.07);
+}
+
+function fxHit(t, g) {
+  const o = ctx.createOscillator(), gn = ctx.createGain();
+  o.type = "sawtooth"; o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.4);
+  const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.setValueAtTime(1200, t); f.frequency.exponentialRampToValueAtTime(200, t + 0.35);
+  gn.gain.setValueAtTime(g * 0.5, t); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+  o.connect(f); f.connect(gn); gn.connect(master); o.start(t); o.stop(t + 0.5);
+}
+
+function triggerPad(id, velocity = 0.85, time = null) {
+  ensureCtx();
+  const t = time ?? ctx.currentTime;
+  const pitch = +($("padPitch")?.value || 0);
+  const rate = Math.pow(2, pitch / 12);
+  const filt = +($("padFilt")?.value || 8000);
+  const hum = +($("padHum")?.value || 0.15);
+  const vel = velocity * (+($("padVel")?.value || 0.85));
+  const jitter = (Math.random() - 0.5) * hum * 0.03;
+  const when = t + jitter;
+
+  // visual feedback
+  const el = document.querySelector(`.pad[data-id="${id}"]`);
+  if (el) {
+    el.classList.add("hit");
+    setTimeout(() => el.classList.remove("hit"), 120);
+  }
+
+  const g = vel * 0.9;
+  switch (id) {
+    case "k": case "k2": kick(when, g, getP()); break;
+    case "s": case "s2": snare(when, g, getP()); break;
+    case "h": case "h2": hat(when, g * 0.85, false, 1); break;
+    case "o": hat(when, g, true, 1); break;
+    case "c": case "c2": clap(when, g); break;
+    case "r": case "r2": rim(when, g); break;
+    case "t": tom(when, g, false); break;
+    case "t2": tom(when, g, true); break;
+    case "p": perc(when, g); break;
+    case "p2": shaker(when, g); break;
+    case "fx": fxHit(when, g); break;
+    default: perc(when, g);
+  }
+
+  // record into current pattern if enabled
+  if ($("padRecord")?.checked && isPlaying) {
+    const spb = 60 / (getP().bpm || 76);
+    const s16 = spb / 4;
+    const barPos = ((ctx.currentTime - (nextTime - 4 * spb)) / s16) % 16;
+    const step = Math.max(0, Math.min(15, Math.round(barPos)));
+    const voice = id[0]; // k,s,h,o,c,r,t,p
+    if (seqPatterns[currentPat][voice] && !seqPatterns[currentPat][voice].includes(step)) {
+      seqPatterns[currentPat][voice].push(step);
+      seqPatterns[currentPat][voice].sort((a,b)=>a-b);
+      renderStepSeq();
+    }
+  }
+}
+
+function buildBeatPad() {
+  const grid = $("beatPad");
+  if (!grid) return;
+  grid.innerHTML = "";
+  PAD_DEFS.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = `pad ${p.cls}`;
+    btn.dataset.id = p.id;
+    btn.innerHTML = `<span class="pad-name">${p.name}</span><span class="pad-key">${p.key}</span>`;
+    btn.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      const rect = btn.getBoundingClientRect();
+      const relY = 1 - ((e.clientY - rect.top) / rect.height);
+      const vel = 0.35 + relY * 0.65;
+      triggerPad(p.id, vel);
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function renderStepSeq() {
+  const host = $("stepSeq");
+  if (!host) return;
+  const voice = $("seqVoice")?.value || "k";
+  const steps = seqPatterns[currentPat][voice] || [];
+  host.innerHTML = "";
+  for (let i = 0; i < 16; i++) {
+    const s = document.createElement("div");
+    s.className = "step" + (steps.includes(i) ? " on" : "") + (i % 4 === 0 ? " beat-accent" : "");
+    s.dataset.step = i;
+    s.addEventListener("click", () => {
+      const arr = seqPatterns[currentPat][voice];
+      const idx = arr.indexOf(i);
+      if (idx >= 0) arr.splice(idx, 1);
+      else { arr.push(i); arr.sort((a,b)=>a-b); }
+      renderStepSeq();
+    });
+    host.appendChild(s);
+  }
+}
+
+function clearSeqVoice() {
+  const voice = $("seqVoice")?.value || "k";
+  seqPatterns[currentPat][voice] = [];
+  renderStepSeq();
+}
+
+function randomizeSeqVoice() {
+  const voice = $("seqVoice")?.value || "k";
+  const dens = voice === "h" ? 0.55 : voice === "k" ? 0.22 : 0.28;
+  const arr = [];
+  for (let i = 0; i < 16; i++) if (Math.random() < dens) arr.push(i);
+  seqPatterns[currentPat][voice] = arr;
+  renderStepSeq();
+}
+
+function generateFill() {
+  // create a fill-ish pattern on current voice
+  const voice = $("seqVoice")?.value || "s";
+  seqPatterns[currentPat][voice] = [10,11,12,13,14,15];
+  if (voice === "k") seqPatterns[currentPat].k = [0,4,8,10,12,13,14];
+  renderStepSeq();
+}
+
+function copyPattern() {
+  const other = currentPat === "A" ? "B" : "A";
+  seqPatterns[other] = JSON.parse(JSON.stringify(seqPatterns[currentPat]));
+  $("status").textContent = `Copied ${currentPat} → ${other}`;
+}
+
+function switchPattern(which) {
+  currentPat = which;
+  $("padA")?.classList.toggle("active-pat", which === "A");
+  $("padB")?.classList.toggle("active-pat", which === "B");
+  renderStepSeq();
+}
+
+function swapPatterns() {
+  const tmp = seqPatterns.A;
+  seqPatterns.A = seqPatterns.B;
+  seqPatterns.B = tmp;
+  renderStepSeq();
+  $("status").textContent = "Patterns swapped";
+}
+
+function exportSeqMidi() {
+  // Simple Type-0 MIDI for the current pattern (kick/snare/hat)
+  const ticksPerBeat = 480;
+  const events = [];
+  const addNote = (step, note, vel=100) => {
+    const tick = step * (ticksPerBeat / 4);
+    events.push({tick, status:0x99, note, vel}); // note on ch10
+    events.push({tick: tick + 60, status:0x89, note, vel:0});
+  };
+  (seqPatterns[currentPat].k || []).forEach(s => addNote(s, 36));
+  (seqPatterns[currentPat].s || []).forEach(s => addNote(s, 38));
+  (seqPatterns[currentPat].h || []).forEach(s => addNote(s, 42));
+  (seqPatterns[currentPat].o || []).forEach(s => addNote(s, 46));
+  (seqPatterns[currentPat].c || []).forEach(s => addNote(s, 39));
+  events.sort((a,b) => a.tick - b.tick);
+
+  // Build minimal MIDI
+  const header = [0x4d,0x54,0x68,0x64,0,0,0,6,0,0,0,1,0x01,0xe0]; // MThd, format0, 1 track, 480 tpq
+  const trackData = [];
+  let lastTick = 0;
+  const writeVar = (v) => {
+    const bytes = [];
+    bytes.push(v & 0x7f);
+    v >>= 7;
+    while (v > 0) { bytes.unshift((v & 0x7f) | 0x80); v >>= 7; }
+    return bytes;
+  };
+  events.forEach(e => {
+    const delta = e.tick - lastTick;
+    lastTick = e.tick;
+    trackData.push(...writeVar(delta), e.status, e.note, e.vel);
+  });
+  trackData.push(0x00, 0xff, 0x2f, 0x00); // end of track
+  const trackLen = trackData.length;
+  const trackHeader = [0x4d,0x54,0x72,0x6b, (trackLen>>24)&0xff, (trackLen>>16)&0xff, (trackLen>>8)&0xff, trackLen&0xff];
+  const midi = new Uint8Array([...header, ...trackHeader, ...trackData]);
+  const blob = new Blob([midi], {type: "audio/midi"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `nasaremix_pattern_${currentPat}.mid`;
+  a.click();
+  $("status").textContent = "MIDI pattern exported";
+}
+
+// Keyboard mapping for pads
+document.addEventListener("keydown", e => {
+  if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  const map = {};
+  PAD_DEFS.forEach(p => map[p.key] = p.id);
+  const id = map[e.key.toLowerCase()];
+  if (id) {
+    e.preventDefault();
+    triggerPad(id, 0.85);
+  }
+});
+
+// Hook sequencer into the main scheduler if "useSeqPattern" is on
+const originalScheduleBar = typeof scheduleBar === "function" ? scheduleBar : null;
+
+// We override the drum part lightly when sequencer is active
+const _oldSchedule = window.scheduleBar || null;
+
+// Safer: after the existing schedule logic runs, we can also fire seq steps.
+// For simplicity we inject into the existing pattern selection.
+
+// Patch the pattern lookup when useSeqPattern is checked
+const originalGetPat = () => DRUM_PATS;
+
+// Initialize pad UI and listeners
+function initBeatPad() {
+  buildBeatPad();
+  renderStepSeq();
+  switchPattern("A");
+
+  $("seqClear")?.addEventListener("click", clearSeqVoice);
+  $("seqRandom")?.addEventListener("click", randomizeSeqVoice);
+  $("seqFill")?.addEventListener("click", generateFill);
+  $("seqCopy")?.addEventListener("click", copyPattern);
+  $("seqVoice")?.addEventListener("change", renderStepSeq);
+  $("padA")?.addEventListener("click", () => switchPattern("A"));
+  $("padB")?.addEventListener("click", () => switchPattern("B"));
+  $("padSwap")?.addEventListener("click", swapPatterns);
+  $("padExportMidi")?.addEventListener("click", exportSeqMidi);
+
+  ["padVel","padPitch","padFilt","padHum"].forEach(id => {
+    $(id)?.addEventListener("input", () => {
+      const map = {padVel:"padVelVal", padPitch:"padPitchVal", padFilt:"padFiltVal", padHum:"padHumVal"};
+      const el = $(map[id]);
+      if (el) el.textContent = (+$(id).value).toFixed(id==="padPitch"?0:2);
+    });
+  });
+}
+
+// Integrate sequencer with main engine: if useSeqPattern checked, replace drum pattern
+const _origSectionSchedule = null; // placeholder
+
+// Monkey-patch the drum scheduling part by redefining how patterns are chosen
+// We wrap the existing schedule function if possible. For robustness we add a listener on play.
+
+// Simple integration: when useSeqPattern is on, build a temporary DRUM_PATS entry
+function getActiveDrumPat() {
+  if (!$("useSeqPattern")?.checked) {
+    return DRUM_PATS[getP().drums] || DRUM_PATS.Mellow;
+  }
+  const pat = seqPatterns[currentPat];
+  return {
+    k: pat.k || [],
+    s: pat.s || [],
+    h: pat.h || [],
+    o: pat.o || []
+  };
+}
+
+// We need to patch the place that reads DRUM_PATS. Find it and make it use getActiveDrumPat.
+// Since the original code does: const pat=DRUM_PATS[p.drums]||DRUM_PATS.Mellow;
+// We will replace that line conceptually by editing the schedule function.
+
 buildProgSelect();buildPresetChips();buildPiano();renderPlaylist();
 if(!loadFromHash())loadSettings()||applyPreset("chill",null,true);
 try{themeIdx=+(localStorage.getItem("lofi_theme")||0)%THEMES.length;const t=THEMES[themeIdx];document.documentElement.style.setProperty("--accent",t.accent);document.documentElement.style.setProperty("--accent-2",t.accent2)}catch(e){}
 updateLabels();setSeed($("seed").value||"1");$("status").textContent="Ready";
+
+// Launch beat pad
+initBeatPad();

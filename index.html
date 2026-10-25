@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#06060a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Lofi Beat Maker Pro</title>
+  <title>Lofi Beat Maker Pro · NasaRemix Studios</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -21,7 +21,7 @@
         <div class="logo-mark">♪</div>
         <div>
           <h1>Lofi Beat Maker</h1>
-          <p class="tag">Pro Studio</p>
+          <p class="tag">Pro · NasaRemix</p>
         </div>
       </div>
       <div class="header-actions">
@@ -236,6 +236,80 @@
           <label class="toggle"><input type="checkbox" id="soloChords" /> Solo chords</label>
           <label class="toggle"><input type="checkbox" id="soloBass" /> Solo bass</label>
           <label class="toggle"><input type="checkbox" id="soloMel" /> Solo melody</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card collapsible open">
+      <button class="card-head" type="button"><span class="card-title">Beat Pad & Sequencer</span><span class="chev">▾</span></button>
+      <div class="card-body">
+        <div class="pad-controls">
+          <div class="field">
+            <label>Kit</label>
+            <select id="padKit" class="select">
+              <option value="lofi">Lofi Classic</option>
+              <option value="boom">Boom Bap</option>
+              <option value="trap">Trap / Modern</option>
+              <option value="jazz">Jazz Brushes</option>
+              <option value="electronic">Electronic</option>
+              <option value="custom">Custom Samples</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Pad mode</label>
+            <select id="padMode" class="select">
+              <option value="live">Live Trigger</option>
+              <option value="seq">Sequencer</option>
+              <option value="both">Live + Seq</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="beat-pad" id="beatPad">
+          <!-- 4x4 grid filled by JS -->
+        </div>
+
+        <div class="seq-header">
+          <span class="seq-label">16-Step Sequencer</span>
+          <div class="seq-tools">
+            <button id="seqClear" class="ghost-btn tiny" title="Clear">Clear</button>
+            <button id="seqRandom" class="ghost-btn tiny" title="Randomize">Rand</button>
+            <button id="seqFill" class="ghost-btn tiny" title="Generate Fill">Fill</button>
+            <button id="seqCopy" class="ghost-btn tiny" title="Copy Pattern">Copy</button>
+            <select id="seqVoice" class="select-sm">
+              <option value="k">Kick</option>
+              <option value="s">Snare</option>
+              <option value="h">Hat</option>
+              <option value="o">Open</option>
+              <option value="c">Clap</option>
+              <option value="r">Rim</option>
+              <option value="t">Tom</option>
+              <option value="p">Perc</option>
+            </select>
+          </div>
+        </div>
+        <div class="step-seq" id="stepSeq">
+          <!-- 16 steps filled by JS -->
+        </div>
+
+        <div class="grid-2" style="margin-top:12px">
+          <div class="field"><div class="field-top"><label>Pad velocity</label><span id="padVelVal" class="mono">0.85</span></div><input type="range" id="padVel" min="0.2" max="1" step="0.01" value="0.85" /></div>
+          <div class="field"><div class="field-top"><label>Pad pitch</label><span id="padPitchVal" class="mono">0</span></div><input type="range" id="padPitch" min="-12" max="12" step="1" value="0" /></div>
+          <div class="field"><div class="field-top"><label>Pad filter</label><span id="padFiltVal" class="mono">8000</span></div><input type="range" id="padFilt" min="400" max="12000" step="100" value="8000" /></div>
+          <div class="field"><div class="field-top"><label>Humanize pads</label><span id="padHumVal" class="mono">0.15</span></div><input type="range" id="padHum" min="0" max="0.5" step="0.01" value="0.15" /></div>
+        </div>
+
+        <div class="toggles" style="margin-top:8px">
+          <label class="toggle"><input type="checkbox" id="padQuantize" checked /> Quantize live</label>
+          <label class="toggle"><input type="checkbox" id="padRecord" /> Record to seq</label>
+          <label class="toggle"><input type="checkbox" id="padMetro" /> Metronome</label>
+          <label class="toggle"><input type="checkbox" id="useSeqPattern" /> Use sequencer pattern</label>
+        </div>
+        <div class="tools-row" style="margin-top:10px">
+          <button id="padA" class="btn-secondary">Pattern A</button>
+          <button id="padB" class="btn-secondary">Pattern B</button>
+          <button id="padSwap" class="btn-secondary">A↔B</button>
+          <button id="padExportMidi" class="btn-secondary">MIDI Pattern</button>
         </div>
       </div>
     </section>
