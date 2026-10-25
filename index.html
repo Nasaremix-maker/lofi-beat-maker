@@ -51,6 +51,19 @@
         <button class="viz-tab" data-mode="scope">Scope</button>
         <button class="viz-tab" data-mode="bars">Bars</button>
         <button class="viz-tab" data-mode="mirror">Mirror</button>
+        <button class="viz-tab" data-mode="radial">Radial</button>
+        <button class="viz-tab" data-mode="wave3d">Wave</button>
+        <button class="viz-tab" data-mode="particles">Particles</button>
+        <button class="viz-tab" data-mode="vu">VU</button>
+      </div>
+      <div class="viz-colors">
+        <label class="tiny-label">Viz color</label>
+        <input type="color" id="vizColor" value="#7c9cff" title="Visualizer color" />
+        <label class="tiny-label">BG</label>
+        <input type="color" id="bgColor" value="#05050a" title="Background color" />
+        <label class="tiny-label">Accent</label>
+        <input type="color" id="accentColor" value="#7c9cff" title="Accent color" />
+        <button type="button" class="ghost-btn tiny" id="radioBtn" title="Radio mode — continuous genre play">Radio Off</button>
       </div>
       <canvas id="viz"></canvas>
       <div class="meters">
@@ -79,6 +92,7 @@
           <option value="15">15s</option><option value="30" selected>30s</option>
           <option value="60">1m</option><option value="120">2m</option>
           <option value="300">5m</option><option value="600">10m</option>
+          <option value="900">15m</option><option value="1800">30m</option>
         </select>
         <select id="exportSR" class="select-sm" title="Sample rate">
           <option value="44100" selected>44.1k</option>
@@ -232,8 +246,8 @@
               <option value="Mellow">Mellow</option><option value="BoomBap">Boom Bap</option><option value="HeadNod">Head Nod</option>
               <option value="Sparse">Sparse</option><option value="Jazzy">Jazzy</option><option value="Dilla">Dilla</option>
               <option value="TripHop">Trip Hop</option><option value="FourFloor">Four Floor</option>
-              <option value="Trap">Trap</option><option value="Reggae">Reggae</option><option value="DnB">Drum & Bass</option>
-              <option value="House">House</option><option value="Afro">Afrobeat</option>
+              <option value="Reggae">Reggae One-Drop</option><option value="DnB">Drum & Bass</option>
+              <option value="JazzRide">Jazz Ride</option>
               <option value="Classical">Classical</option><option value="Ambient">Ambient</option>
               <option value="None">None</option>
             </select>
@@ -248,7 +262,9 @@
           <p>Drop kick.wav / snare.wav / hat.wav here</p>
           <input type="file" id="sampleInput" accept="audio/*,.wav,.mp3" multiple hidden />
           <button type="button" id="pickSamples" class="btn-secondary">Pick samples</button>
-          <div id="sampleStatus" class="mono" style="margin-top:8px;font-size:0.75rem;color:var(--muted)">Using synthesis</div>
+          <button type="button" id="clearSamples" class="btn-secondary">Clear samples</button>
+          <div id="sampleStatus" class="mono" style="margin-top:8px;font-size:0.75rem;color:var(--muted)">Using synthesis — load kick/snare/hat WAVs (Freesound CC0)</div>
+          <p style="margin-top:6px;font-size:0.7rem;color:var(--muted)">Tip: Freesound.org → “boom bap kick CC0” · “reggae rim CC0” · “jazz brush snare”. Name files with kick, snare, or hat.</p>
         </div>
         <div class="toggles">
           <label class="toggle"><input type="checkbox" id="muteDrums" /> Mute drums</label>
