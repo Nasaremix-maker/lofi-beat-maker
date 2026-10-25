@@ -91,15 +91,10 @@ const PRESET_LABELS={
 const GENRE_PRESETS={
   lofi:["chill","rainy","dusty","night","dreamy","neo","piano","clean","dilla","cafe","focus","midnight","triphop","sunday","velvet","jazzlounge"],
   hiphop:["hh_boom","hh_classic","dusty","dilla","velvet"],
-  trap:["trap_dark","trap_melodic"],
   reggae:["reggae_one","reggae_dub"],
   dnb:["dnb_liquid","dnb_neuro"],
   jazz:["jazz_swing","jazz_ballad","jazzlounge","rainy"],
-  classical:["classical_piano","cinematic","piano"],
-  house:["house_deep","house_classic"],
-  rnb:["rnb_smooth","rnb_quiet","neo","velvet"],
-  ambient:["ambient_drift","ambient_space","dreamy","sunday"],
-  afro:["afro_groove","afro_highlife"]
+  classical:["classical_piano","cinematic","piano"]
 };
 let currentGenre="lofi";
 const MOODS={Any:[],Calm:["dreamy","piano","sunday","focus","clean"],Rainy:["rainy","piano","triphop","night"],Jazzy:["jazzlounge","cafe","rainy","neo"],Upbeat:["dusty","dilla","cafe","neo"],Dark:["triphop","night","velvet","piano"],Dreamy:["dreamy","midnight","night","sunday"]};
@@ -222,32 +217,267 @@ function unlockAudio(){
 function noiseBuf(dur){const n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=rng()*2-1;return b}
 
 function playSample(buf,t,g,dest){if(!buf)return;const s=ctx.createBufferSource();s.buffer=buf;const gn=ctx.createGain();gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(0.001,t+Math.min(1.2,buf.duration));s.connect(gn);gn.connect(dest||master);s.start(t)}
+// ========== GENRE-SPECIFIC SOUND ENGINE ==========
 function kick(t,g,p){
   if(customSamples.k){playSample(customSamples.k,t,g);return}
-  const dec=0.25+p.kickDecay*0.35,clk=p.kickClick;
-  const o=ctx.createOscillator(),gn=ctx.createGain();o.frequency.setValueAtTime(175,t);o.frequency.exponentialRampToValueAtTime(38,t+0.09);
-  gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(0.001,t+dec+0.15);o.connect(gn);gn.connect(master);
-  const s=ctx.createOscillator(),sg=ctx.createGain();s.frequency.setValueAtTime(70,t);s.frequency.exponentialRampToValueAtTime(35,t+0.12);
-  sg.gain.setValueAtTime(g*0.55,t);sg.gain.exponentialRampToValueAtTime(0.001,t+dec);s.connect(sg);sg.connect(master);
-  const c=ctx.createOscillator(),cg=ctx.createGain();c.type="square";c.frequency.value=1400;cg.gain.setValueAtTime(g*0.35*clk,t);cg.gain.exponentialRampToValueAtTime(0.001,t+0.02);
-  c.connect(cg);cg.connect(master);o.start(t);o.stop(t+0.5);s.start(t);s.stop(t+0.45);c.start(t);c.stop(t+0.03);
+  const genre = currentGenre || "lofi";
+  const dec=0.25+(p.kickDecay||0.5)*0.35, clk=p.kickClick||0.4;
+
+  if(genre==="hiphop"){
+    // Deep, punchy boom-bap kick with long sub
+    const o=ctx.createOscillator(),gn=ctx.createGain();
+    o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(32,t+0.12);
+    gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(0.001,t+dec+0.25);
+    o.connect(gn);gn.connect(master);
+    const sub=ctx.createOscillator(),sg=ctx.createGain();
+    sub.frequency.setValueAtTime(55,t);sub.frequency.exponentialRampToValueAtTime(28,t+0.2);
+    sg.gain.setValueAtTime(g*0.7,t);sg.gain.exponentialRampToValueAtTime(0.001,t+dec+0.15);
+    sub.connect(sg);sg.connect(master);
+    const c=ctx.createOscillator(),cg=ctx.createGain();c.type="square";c.frequency.value=900;
+    cg.gain.setValueAtTime(g*0.25*clk,t);cg.gain.exponentialRampToValueAtTime(0.001,t+0.015);
+    c.connect(cg);cg.connect(master);
+    o.start(t);o.stop(t+0.6);sub.start(t);sub.stop(t+0.5);c.start(t);c.stop(t+0.03);
+  } else if(genre==="reggae"){
+    // Warm, rounded one-drop kick
+    const o=ctx.createOscillator(),gn=ctx.createGain();
+    o.type="sine";o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(40,t+0.15);
+    gn.gain.setValueAtTime(g*0.9,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+    o.connect(gn);gn.connect(master);
+    const o2=ctx.createOscillator(),g2=ctx.createGain();
+    o2.frequency.setValueAtTime(60,t);o2.frequency.exponentialRampToValueAtTime(30,t+0.2);
+    g2.gain.setValueAtTime(g*0.5,t);g2.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    o2.connect(g2);g2.connect(master);
+    o.start(t);o.stop(t+0.4);o2.start(t);o2.stop(t+0.35);
+  } else if(genre==="dnb"){
+    // Tight, clicky, fast DnB kick
+    const o=ctx.createOscillator(),gn=ctx.createGain();
+    o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(45,t+0.06);
+    gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+    o.connect(gn);gn.connect(master);
+    const c=ctx.createOscillator(),cg=ctx.createGain();c.type="square";c.frequency.value=1800;
+    cg.gain.setValueAtTime(g*0.5*clk,t);cg.gain.exponentialRampToValueAtTime(0.001,t+0.012);
+    c.connect(cg);cg.connect(master);
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.04);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=2000;
+    const ng=ctx.createGain();ng.gain.setValueAtTime(g*0.3,t);ng.gain.exponentialRampToValueAtTime(0.001,t+0.03);
+    n.connect(hp);hp.connect(ng);ng.connect(master);n.start(t);n.stop(t+0.04);
+    o.start(t);o.stop(t+0.25);c.start(t);c.stop(t+0.02);
+  } else if(genre==="jazz"){
+    // Soft, acoustic-style kick (more like a floor tom / soft beater)
+    const o=ctx.createOscillator(),gn=ctx.createGain();
+    o.type="sine";o.frequency.setValueAtTime(100,t);o.frequency.exponentialRampToValueAtTime(50,t+0.18);
+    gn.gain.setValueAtTime(g*0.7,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.28);
+    o.connect(gn);gn.connect(master);
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.08);
+    const bp=ctx.createBiquadFilter();bp.type="lowpass";bp.frequency.value=400;
+    const ng=ctx.createGain();ng.gain.setValueAtTime(g*0.25,t);ng.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+    n.connect(bp);bp.connect(ng);ng.connect(master);n.start(t);n.stop(t+0.1);
+    o.start(t);o.stop(t+0.35);
+  } else if(genre==="classical"){
+    // Very soft timpani-like or almost no kick
+    const o=ctx.createOscillator(),gn=ctx.createGain();
+    o.type="sine";o.frequency.setValueAtTime(80,t);o.frequency.exponentialRampToValueAtTime(40,t+0.3);
+    gn.gain.setValueAtTime(g*0.4,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+    o.connect(gn);gn.connect(master);
+    o.start(t);o.stop(t+0.55);
+  } else {
+    // Default Lofi – warm, slightly dusty
+    const o=ctx.createOscillator(),gn=ctx.createGain();
+    o.frequency.setValueAtTime(175,t);o.frequency.exponentialRampToValueAtTime(38,t+0.09);
+    gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(0.001,t+dec+0.15);
+    o.connect(gn);gn.connect(master);
+    const s=ctx.createOscillator(),sg=ctx.createGain();
+    s.frequency.setValueAtTime(70,t);s.frequency.exponentialRampToValueAtTime(35,t+0.12);
+    sg.gain.setValueAtTime(g*0.55,t);sg.gain.exponentialRampToValueAtTime(0.001,t+dec);
+    s.connect(sg);sg.connect(master);
+    const c=ctx.createOscillator(),cg=ctx.createGain();c.type="square";c.frequency.value=1400;
+    cg.gain.setValueAtTime(g*0.35*clk,t);cg.gain.exponentialRampToValueAtTime(0.001,t+0.02);
+    c.connect(cg);cg.connect(master);
+    o.start(t);o.stop(t+0.5);s.start(t);s.stop(t+0.45);c.start(t);c.stop(t+0.03);
+  }
 }
+
 function snare(t,g,p){
   if(customSamples.s){playSample(customSamples.s,t,g);return}
-  const tone=p.snareTone;
-  const n=ctx.createBufferSource();n.buffer=noiseBuf(0.3);const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=2400;
-  const gn=ctx.createGain();gn.gain.setValueAtTime(g*(1-tone*0.4),t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.22);n.connect(bp);bp.connect(gn);gn.connect(master);
-  const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(140,t+0.08);
-  og.gain.setValueAtTime(g*0.7*tone,t);og.gain.exponentialRampToValueAtTime(0.001,t+0.14);o.connect(og);og.connect(master);
-  n.start(t);n.stop(t+0.28);o.start(t);o.stop(t+0.16);
+  const genre = currentGenre || "lofi";
+  const tone=p.snareTone||0.5;
+
+  if(genre==="hiphop"){
+    // Fat, crackly boom-bap snare
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.28);
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1800;bp.Q.value=0.8;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*0.9,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+    n.connect(bp);bp.connect(gn);gn.connect(master);
+    const o=ctx.createOscillator(),og=ctx.createGain();
+    o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(110,t+0.08);
+    og.gain.setValueAtTime(g*0.6*tone,t);og.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+    o.connect(og);og.connect(master);
+    n.start(t);n.stop(t+0.25);o.start(t);o.stop(t+0.15);
+  } else if(genre==="reggae"){
+    // Dry, rimshot-ish reggae snare
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.12);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=1200;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*0.75,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+    n.connect(hp);hp.connect(gn);gn.connect(master);
+    const o=ctx.createOscillator(),og=ctx.createGain();o.type="triangle";
+    o.frequency.setValueAtTime(320,t);o.frequency.exponentialRampToValueAtTime(180,t+0.05);
+    og.gain.setValueAtTime(g*0.5,t);og.gain.exponentialRampToValueAtTime(0.001,t+0.07);
+    o.connect(og);og.connect(master);
+    n.start(t);n.stop(t+0.12);o.start(t);o.stop(t+0.08);
+  } else if(genre==="dnb"){
+    // Sharp, bright, short DnB snare
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.15);
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=3200;bp.Q.value=1.5;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+    n.connect(bp);bp.connect(gn);gn.connect(master);
+    const o=ctx.createOscillator(),og=ctx.createGain();
+    o.frequency.setValueAtTime(280,t);o.frequency.exponentialRampToValueAtTime(150,t+0.04);
+    og.gain.setValueAtTime(g*0.5,t);og.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+    o.connect(og);og.connect(master);
+    n.start(t);n.stop(t+0.14);o.start(t);o.stop(t+0.08);
+  } else if(genre==="jazz"){
+    // Brushed / soft jazz snare
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.35);
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=2200;bp.Q.value=0.6;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*0.55,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.28);
+    n.connect(bp);bp.connect(gn);gn.connect(master);
+    n.start(t);n.stop(t+0.32);
+  } else if(genre==="classical"){
+    // Soft orchestral snare / almost brush
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.4);
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=2500;bp.Q.value=0.5;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*0.35,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+    n.connect(bp);bp.connect(gn);gn.connect(master);
+    n.start(t);n.stop(t+0.4);
+  } else {
+    // Lofi default
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(0.3);
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=2400;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*(1-tone*0.4),t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+    n.connect(bp);bp.connect(gn);gn.connect(master);
+    const o=ctx.createOscillator(),og=ctx.createGain();
+    o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(140,t+0.08);
+    og.gain.setValueAtTime(g*0.7*tone,t);og.gain.exponentialRampToValueAtTime(0.001,t+0.14);
+    o.connect(og);og.connect(master);
+    n.start(t);n.stop(t+0.28);o.start(t);o.stop(t+0.16);
+  }
 }
+
 function hat(t,g,open,vel=1){
   if(customSamples.h&&!open){playSample(customSamples.h,t,g*vel);return}
-  const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.35:0.06);const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=7800;
-  const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.3:0.05));n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.35:0.07));
+  const genre = currentGenre || "lofi";
+
+  if(genre==="hiphop"){
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.25:0.05);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=9000;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel*0.9,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.22:0.04));
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.28:0.06));
+  } else if(genre==="reggae"){
+    // Softer, more open reggae hats
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.4:0.08);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=6500;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel*0.7,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.35:0.07));
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.4:0.09));
+  } else if(genre==="dnb"){
+    // Bright, fast, tight hats
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.2:0.035);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=11000;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.18:0.03));
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.22:0.04));
+  } else if(genre==="jazz"){
+    // Ride / brush character
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.5:0.12);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=7000;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel*0.55,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.45:0.1));
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.5:0.12));
+  } else if(genre==="classical"){
+    // Soft cymbal / triangle-ish
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.6:0.15);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=8000;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel*0.35,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.5:0.12));
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.55:0.14));
+  } else {
+    // Lofi default
+    const n=ctx.createBufferSource();n.buffer=noiseBuf(open?0.35:0.06);
+    const hp=ctx.createBiquadFilter();hp.type="highpass";hp.frequency.value=7800;
+    const gn=ctx.createGain();gn.gain.setValueAtTime(g*vel,t);gn.gain.exponentialRampToValueAtTime(0.001,t+(open?0.3:0.05));
+    n.connect(hp);hp.connect(gn);gn.connect(master);n.start(t);n.stop(t+(open?0.35:0.07));
+  }
 }
 function chordTone(t,freq,type,gain,dur,pan,p){
   const dest=musicGain;const merge=node=>{const pn=ctx.createStereoPanner();pn.pan.value=pan||0;node.connect(pn);pn.connect(dest);pn.connect(reverbSend)};
+  const genre = currentGenre || "lofi";
+
+  // Genre-specific instrument overrides for strong character
+  if(genre==="classical"){
+    // Rich classical piano / string-like
+    for(let i=0;i<5;i++){
+      const o=ctx.createOscillator(),gn=ctx.createGain(),f=ctx.createBiquadFilter();
+      o.type=i<2?"triangle":"sine";
+      o.frequency.value=freq*[1,2,3,4.01,5.02][i];
+      f.type="lowpass";f.frequency.value=5200-i*700;
+      const g0=gain*[0.5,0.28,0.14,0.08,0.04][i];
+      gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(g0,t+0.01);
+      gn.gain.exponentialRampToValueAtTime(0.001,t+dur*(0.85+i*0.03));
+      o.connect(f);f.connect(gn);merge(gn);o.start(t);o.stop(t+dur+0.4);
+    }
+    return;
+  }
+  if(genre==="jazz"){
+    // Warm jazz piano / Rhodes hybrid
+    for(let i=0;i<4;i++){
+      const o=ctx.createOscillator(),gn=ctx.createGain(),f=ctx.createBiquadFilter();
+      o.type="triangle";o.frequency.value=freq*[1,2,3,4][i];o.detune.value=(i-1.5)*3;
+      f.type="lowpass";f.frequency.value=3800-i*400;
+      const g0=gain*[0.5,0.25,0.12,0.06][i];
+      gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(g0,t+0.008);
+      gn.gain.exponentialRampToValueAtTime(0.001,t+dur*0.75);
+      o.connect(f);f.connect(gn);merge(gn);o.start(t);o.stop(t+dur+0.3);
+    }
+    return;
+  }
+  if(genre==="reggae"){
+    // Skanky, bright organ / guitar-like stabs
+    const o=ctx.createOscillator(),gn=ctx.createGain(),f=ctx.createBiquadFilter();
+    o.type="square";o.frequency.value=freq;
+    f.type="lowpass";f.frequency.value=2200;
+    gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(gain*0.7,t+0.01);
+    gn.gain.exponentialRampToValueAtTime(0.001,t+Math.min(dur,0.35));
+    o.connect(f);f.connect(gn);merge(gn);o.start(t);o.stop(t+0.4);
+    const o2=ctx.createOscillator(),g2=ctx.createGain();
+    o2.type="sawtooth";o2.frequency.value=freq*1.5;o2.detune.value=8;
+    g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(gain*0.25,t+0.01);
+    g2.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+    o2.connect(g2);merge(g2);o2.start(t);o2.stop(t+0.3);
+    return;
+  }
+  if(genre==="dnb"){
+    // Atmospheric pad / Reese-ish for liquid, or sharp for neuro
+    for(let i=0;i<3;i++){
+      const o=ctx.createOscillator(),gn=ctx.createGain(),f=ctx.createBiquadFilter();
+      o.type="sawtooth";o.frequency.value=freq;o.detune.value=(i-1)*12;
+      f.type="lowpass";f.frequency.setValueAtTime(600,t);f.frequency.linearRampToValueAtTime(1800,t+dur*0.4);
+      gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(gain/3.2,t+0.3);
+      gn.gain.setTargetAtTime(0.001,t+dur*0.6,0.4);
+      o.connect(f);f.connect(gn);merge(gn);o.start(t);o.stop(t+dur+0.5);
+    }
+    return;
+  }
+  if(genre==="hiphop"){
+    // Dusty Rhodes / sampled keys character
+    const car=ctx.createOscillator(),mod=ctx.createOscillator(),mg=ctx.createGain(),gn=ctx.createGain();
+    const f=ctx.createBiquadFilter();f.type="lowpass";f.frequency.value=2800;
+    car.type="sine";car.frequency.value=freq;mod.type="sine";mod.frequency.value=freq*1.8;
+    mg.gain.setValueAtTime(freq*1.1,t);mg.gain.exponentialRampToValueAtTime(freq*0.2,t+dur*0.5);
+    mod.connect(mg);mg.connect(car.frequency);
+    gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(gain,t+0.02);
+    gn.gain.exponentialRampToValueAtTime(0.001,t+dur*0.85);
+    car.connect(f);f.connect(gn);merge(gn);
+    car.start(t);car.stop(t+dur+0.2);mod.start(t);mod.stop(t+dur+0.2);
+    return;
+  }
+
+  // Default Lofi instruments
   if(type==="Rhodes"||type==="EP"){
     const car=ctx.createOscillator(),mod=ctx.createOscillator(),mg=ctx.createGain(),gn=ctx.createGain();
     const f=ctx.createBiquadFilter();f.type="lowpass";f.frequency.value=type==="EP"?3600:3000;
@@ -477,8 +707,8 @@ function randomize(){
   applyPreset(name);
   const inten=$("randIntensity").value;
   const amt=inten==="subtle"?3:inten==="chaotic"?12:6;
-  const bpmMax = currentGenre==="dnb"?180:currentGenre==="trap"||currentGenre==="house"?150:120;
-  const bpmMin = currentGenre==="ambient"?50:currentGenre==="classical"?60:55;
+  const bpmMax = currentGenre==="dnb"?180:currentGenre==="hiphop"?105:currentGenre==="reggae"?90:currentGenre==="jazz"?140:110;
+  const bpmMin = currentGenre==="classical"?55:currentGenre==="dnb"?160:currentGenre==="hiphop"?80:60;
   $("bpm").value=Math.min(bpmMax,Math.max(bpmMin,+$("bpm").value+Math.floor(Math.random()*amt*2)-amt));
   $("swing").value=Math.min(0.42,Math.max(0,+$("swing").value+(Math.random()-0.5)*(amt*0.01)));
   $("filter").value=Math.min(12000,Math.max(1800,+$("filter").value+Math.floor(Math.random()*amt*80)-amt*40));
@@ -515,8 +745,8 @@ function setGenre(g){
   if(list.length) applyPreset(list[0]);
   buildPresetChips();
   // Update page title feel
-  const titles={lofi:"Lofi",hiphop:"Hip Hop",trap:"Trap",reggae:"Reggae",dnb:"Drum & Bass",jazz:"Jazz",classical:"Classical",house:"House",rnb:"R&B",ambient:"Ambient",afro:"Afrobeat"};
-  $("status").textContent = (titles[g]||g) + " mode";
+  const titles={lofi:"Lofi",hiphop:"Hip Hop",reggae:"Reggae",dnb:"Drum & Bass",jazz:"Jazz",classical:"Classical"};
+  $("status").textContent = (titles[g]||g) + " mode — unique sound engine loaded";
   const h1=document.querySelector(".brand h1");
   if(h1) h1.textContent = (titles[g]||"Lofi") + " Beat Maker";
 }

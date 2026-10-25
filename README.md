@@ -1,14 +1,16 @@
 # Beat Maker Pro — NasaRemix Studios Edition
 
-A free, browser-based **multi-genre** beat studio. Switch between Lofi, Hip Hop, Trap, Reggae, Drum & Bass, Jazz, Classical, House, R&B, Ambient, and Afrobeat. Procedural synthesis, live beat pad, 16-step sequencer, and full stem export — no account, no install required (optional PWA).
+A free, browser-based **multi-genre** beat studio. Switch between Lofi, Hip Hop, Reggae, Drum & Bass, Jazz, and Classical — each with its own dedicated sound engine. Procedural synthesis, live beat pad, 16-step sequencer, and full stem export — no account, no install required (optional PWA).
 
 ---
 
 ## Features
 
 ### Multi-Genre Engine (NEW)
-- One-click genre switcher: **Lofi · Hip Hop · Trap · Reggae · DnB · Jazz · Classical · House · R&B · Ambient · Afrobeat**
+- One-click genre switcher: **Lofi · Hip Hop · Reggae · Drum & Bass · Jazz · Classical**
 - Genre-specific presets, drum patterns, BPM ranges, instruments and FX bias
+- **Unique synthesis per genre** — kicks, snares, hats, and instruments are completely different algorithms (not just settings)
+- Hip Hop: deep boom-bap kicks & fat snares · Reggae: warm one-drop & skank chords · DnB: tight clicks & Reese pads · Jazz: soft acoustic drums & warm piano · Classical: timpani-like & rich piano/strings
 - Title and status update to match the selected style
 - Randomize respects the current genre
 
